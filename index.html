@@ -332,6 +332,9 @@ tr.me td{font-weight:700}
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
         <div><h2>Notas da turma</h2><div class="sub" style="margin:2px 0 0" id="statLine">Nenhum aluno corrigido ainda.</div></div>
         <div class="rowbtns" style="flex:0 0 auto">
+          <button class="btn" id="boletimBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>
+            Boletim (PDF)</button>
           <button class="btn" id="xlsxBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13l3 3 3-3M12 16v-6"/></svg>
             Exportar Excel</button>
@@ -1491,6 +1494,7 @@ function renderResults(){
   const hasAny=store.res.length>0;
   $("#clearNotasBtn").style.display = hasAny? "" : "none";
   $("#xlsxBtn").style.display = hasAny? "" : "none";
+  { const bb=$("#boletimBtn"); if(bb) bb.style.display = hasAny? "" : "none"; }
   if(store.res.length===0){
     body.innerHTML='<div class="card"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg><div>Nenhum aluno corrigido ainda.<br>As notas aparecem aqui conforme você salva.</div></div></div>';
     $("#statLine").textContent="Nenhum aluno corrigido ainda."; return;
@@ -1934,6 +1938,295 @@ $("#gerarPdfBtn").onclick=async()=>{
   }catch(e){ toast("Erro ao gerar o PDF."); }
   btn.textContent="Gerar PDF";
 };
+
+/* ================= BOLETIM (PDF) ================= */
+function blEscolaGet(){ try{ return localStorage.getItem("omr_escola")||""; }catch(e){ return ""; } }
+function blEscolaSet(v){ try{ localStorage.setItem("omr_escola", v||""); }catch(e){} }
+function blHoje(){ const d=new Date(), p=n=>String(n).padStart(2,"0"); return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear(); }
+function blAssessment(titulo){ const t=(titulo||"").trim(); if(t) return t;
+  const k=mKind(); return k==="m2"?"Simulado ENEM": k==="m1"?"Simulado — Modelo 01":"Avaliação"; }
+function blResFamily(){ const k=mKind();
+  if(k==="m1") return store.res.filter(r=>(r.mod||"m1")==="m1");
+  if(k==="custom") return store.res.filter(r=>r.mod==="custom");
+  return store.res.filter(r=>r.mod==="m2d1"||r.mod==="m2d2"); }
+function blStudents(turmaFilter){
+  const k=mKind();
+  const base=blResFamily().filter(r=> !turmaFilter || r.turma===turmaFilter);
+  if(k==="m2"){
+    const map=new Map();
+    base.forEach(r=>{ const nome=r.aluno||r.name; const key=(r.turma||"")+"||"+nome;
+      if(!map.has(key)) map.set(key,{turma:r.turma||"",turmaNome:r.turmaNome||"",nome,roll:r.roll||"",d1:null,d2:null});
+      const s=map.get(key); if(r.mod==="m2d1") s.d1=r; else if(r.mod==="m2d2") s.d2=r; });
+    return [...map.values()].map(s=>{
+      const a1=(s.d1&&s.d1.areas)||AREAS_M2.m2d1, a2=(s.d2&&s.d2.areas)||AREAS_M2.m2d2;
+      const g1=[{nome:a1[0],ac:s.d1?s.d1.per[0]:null,n:45},{nome:a1[1],ac:s.d1?s.d1.per[1]:null,n:45}];
+      const g2=[{nome:a2[0],ac:s.d2?s.d2.per[0]:null,n:45},{nome:a2[1],ac:s.d2?s.d2.per[1]:null,n:45}];
+      const t1=s.d1?s.d1.total:null, t2=s.d2?s.d2.total:null;
+      const geral=(t1||0)+(t2||0), dias=(t1!=null?1:0)+(t2!=null?1:0);
+      return { nome:s.nome, turma:s.turma, turmaNome:s.turmaNome, roll:s.roll, kind:"m2",
+        groups:[ {titulo:"1º dia — "+a1[0]+" e "+a1[1], rows:g1, sub:{label:"Total do 1º dia",ac:(t1||0),n:90,has:t1!=null}},
+                 {titulo:"2º dia — "+a2[0]+" e "+a2[1], rows:g2, sub:{label:"Total do 2º dia",ac:(t2||0),n:90,has:t2!=null}} ],
+        headline:{ac:geral,n:180,label:"Geral (180 questões)",partial:dias<2} };
+    });
+  }
+  return base.map(r=>{
+    let rows;
+    if(k==="m1"){ rows=store.key.disc.map((d,c)=>({nome:d||("Disciplina "+(c+1)),ac:(r.per[c]||0),n:(r.counts?r.counts[c]:NROW)})).filter(x=>x.n>0); }
+    else { const areas=r.areas||mAreas()||[]; const dn=r.discN||[]; rows=areas.map((nm,c)=>({nome:nm,ac:(r.per&&r.per[c]!=null?r.per[c]:0),n:(dn[c]||0)})).filter(x=>x.n>0); }
+    const totAc=rows.reduce((s,x)=>s+(x.ac||0),0), totN=r.nq||rows.reduce((s,x)=>s+x.n,0);
+    return { nome:r.name, turma:r.turma||"", turmaNome:r.turmaNome||"", roll:r.roll||"", kind:k,
+      groups:[{titulo:"Desempenho por disciplina", rows}], headline:{ac:totAc,n:totN,label:"Total",partial:false} };
+  });
+}
+function blCollect(cfg){
+  const scope=blStudents(cfg.turma||"");
+  let targets=scope;
+  if(cfg.view==="ind" && cfg.aluno) targets=scope.filter(s=>(s.turma+"||"+s.nome)===cfg.aluno);
+  return { escola:(cfg.escola||"").trim(), assessment:blAssessment(cfg.titulo), data:blHoje(),
+    view:cfg.view, kind:mKind(), students:scope, targets };
+}
+
+/* --- desenho puro (recebe só JsPDF + data) --- */
+function blDrawPDF(JsPDF, data){
+  const GREEN=[15,110,86], SOFT=[231,243,239], SOFT2=[244,248,246], LINE=[215,222,217],
+        MUTE=[95,111,105], INK=[22,33,29], GRAYL=[157,184,174], HEADINK=[18,51,34], GLINE=[191,224,214];
+  const OK=[15,110,86], WARN=[181,130,14], BAD=[178,59,59];
+  const pctCol=p=> p>=70?OK : p>=50?WARN : BAD;
+  const isTurma=data.view==="turma";
+  let nvCalc = data.kind==="m2"?4 : (data.students[0]? data.students[0].groups[0].rows.length : 1);
+  const landscape = isTurma && (data.kind==="m2" || nvCalc>4);
+  const doc=new JsPDF({unit:"mm", format:"a4", orientation: landscape?"landscape":"portrait"});
+  const PW=landscape?297:210, PH=landscape?210:297, ML=16, MR=16, CW=PW-ML-MR;
+  const setFill=c=>doc.setFillColor(c[0],c[1],c[2]);
+  const setText=c=>doc.setTextColor(c[0],c[1],c[2]);
+  const setDraw=c=>doc.setDrawColor(c[0],c[1],c[2]);
+  const clipTo=(txt,wmm)=>{ txt=String(txt==null?"":txt); if(doc.getTextWidth(txt)<=wmm) return txt;
+    let s=txt; while(s.length>1 && doc.getTextWidth(s+"…")>wmm) s=s.slice(0,-1); return s+"…"; };
+
+  function header(assessment){
+    let y=18;
+    doc.setFont("helvetica","bold"); doc.setFontSize(14); setText(INK);
+    doc.text(data.escola||"Nome da escola", PW/2, y, {align:"center"}); y+=6;
+    doc.setFont("helvetica","bold"); doc.setFontSize(9); setText(GREEN);
+    const sub=[isTurma?"Quadro da Turma":"Boletim de Desempenho", assessment, data.data].filter(Boolean).join("   ·   ");
+    doc.text(sub.toUpperCase(), PW/2, y, {align:"center"}); y+=3.5;
+    setDraw(GREEN); doc.setLineWidth(0.6); doc.line(ML,y,PW-MR,y);
+    return y+6;
+  }
+  function kvField(x,y,k,v){
+    doc.setFont("helvetica","normal"); doc.setFontSize(10); setText(MUTE); doc.text(k,x,y);
+    const kw=doc.getTextWidth(k);
+    doc.setFont("helvetica","bold"); setText(INK); doc.text(String(v==null||v===""?"—":v), x+kw+1, y);
+  }
+  function sectionTitle(y,txt){
+    y+=2; doc.setFont("helvetica","bold"); doc.setFontSize(8.5); setText(GREEN);
+    doc.text(String(txt).toUpperCase(), ML, y); y+=2;
+    setDraw(GLINE); doc.setLineWidth(0.3); doc.line(ML,y,ML+CW,y); return y+4;
+  }
+  function tHeader(x,y,cols){
+    const tw=cols.reduce((s,c)=>s+c.w,0), hh=8;
+    setFill(SOFT); doc.rect(x,y,tw,hh,"F");
+    doc.setFont("helvetica","bold"); doc.setFontSize(8.6); setText(HEADINK);
+    let cx=x; cols.forEach(c=>{ const a=c.align||"left"; const tx=a==="center"?cx+c.w/2:a==="right"?cx+c.w-2:cx+2;
+      doc.text(clipTo(c.label,c.w-3), tx, y+hh/2+1.4, {align:a}); cx+=c.w; });
+    setDraw(GLINE); doc.setLineWidth(0.3); doc.line(x,y+hh,x+tw,y+hh); return y+hh;
+  }
+  function tRow(x,y,cols,r,rh){
+    const tw=cols.reduce((s,c)=>s+c.w,0);
+    if(r.style==="total"){ setFill(GREEN); doc.rect(x,y,tw,rh,"F"); }
+    else if(r.style==="sub"){ setFill(SOFT2); doc.rect(x,y,tw,rh,"F"); }
+    else if(r.style==="media"){ setFill(SOFT); doc.rect(x,y,tw,rh,"F"); }
+    let cx=x;
+    cols.forEach((c,ci)=>{ const cell=r.cells[ci]||{}; const a=c.align||"left";
+      let col = r.style==="total"?[255,255,255]:INK;
+      if(c.key==="pct" && r.style!=="total" && cell.pct!=null) col=pctCol(cell.pct);
+      const bold = r.style==="total"||r.style==="sub"||r.style==="media"||cell.bold;
+      doc.setFont("helvetica", bold?"bold":"normal"); doc.setFontSize(9.2); setText(col);
+      const tx=a==="center"?cx+c.w/2:a==="right"?cx+c.w-2:cx+2;
+      doc.text(clipTo(cell.text,c.w-3), tx, y+rh/2+1.6, {align:a}); cx+=c.w; });
+    setDraw(LINE); doc.setLineWidth(0.2); doc.line(x,y+rh,x+tw,y+rh); return y+rh;
+  }
+  function drawTable(x,y,cols,rows){ let yy=tHeader(x,y,cols); rows.forEach(r=>{ yy=tRow(x,yy,cols,r,8); }); return yy; }
+  function drawFoot(){
+    const y=PH-12; setDraw(LINE); doc.setLineWidth(0.2); doc.line(ML,y,PW-MR,y);
+    doc.setFont("helvetica","normal"); doc.setFontSize(7.5); setText(MUTE);
+    doc.text("Leitor de Cartão-Resposta", ML, y+4);
+    doc.text("Gerado em "+data.data, PW-MR, y+4, {align:"right"});
+  }
+  function drawSigns(){
+    const yy=PH-34, gap=20, w=(CW-gap)/2;
+    setDraw([70,70,70]); doc.setLineWidth(0.3);
+    doc.line(ML,yy,ML+w,yy); doc.line(ML+w+gap,yy,ML+w+gap+w,yy);
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.5); setText(MUTE);
+    doc.text("Assinatura do professor", ML+w/2, yy+5, {align:"center"});
+    doc.text("Assinatura do responsável", ML+w+gap+w/2, yy+5, {align:"center"});
+  }
+  const byTurma={}; data.students.forEach(s=>{ (byTurma[s.turma]=byTurma[s.turma]||[]).push(s); });
+  function mediaRank(stu){
+    const g=(byTurma[stu.turma]||[]).slice().sort((a,b)=>b.headline.ac-a.headline.ac);
+    const n=g.length, media=n? g.reduce((s,x)=>s+x.headline.ac,0)/n : 0, rank=g.indexOf(stu)+1;
+    return {media,rank,n};
+  }
+  function drawCompare(y,val,media,max,rank,n,partial){
+    const bx=ML, bw=CW, bh=30;
+    setDraw(LINE); doc.setLineWidth(0.3); setFill([250,252,251]); doc.roundedRect(bx,y,bw,bh,2,2,"FD");
+    doc.setFont("helvetica","bold"); doc.setFontSize(8.5); setText(MUTE);
+    doc.text("COMPARATIVO COM A TURMA", bx+5, y+7);
+    const barX=bx+50, barW=bw-50-42, trackH=4.5;
+    const bar=(yy,label,v,color)=>{
+      doc.setFont("helvetica","normal"); doc.setFontSize(9); setText(MUTE); doc.text(label, bx+5, yy+3.4);
+      setFill([233,239,236]); doc.roundedRect(barX,yy,barW,trackH,1,1,"F");
+      const w=Math.max(0,Math.min(1, max? v/max:0))*barW;
+      if(w>0.3){ setFill(color); doc.roundedRect(barX,yy,w,trackH,1,1,"F"); }
+      setText(INK); doc.setFont("helvetica","bold");
+      doc.text((Math.round(v*10)/10)+"/"+max, bx+bw-5, yy+3.6, {align:"right"});
+    };
+    bar(y+11,"Sua nota",val,GREEN);
+    bar(y+18,"Média da turma",media,GRAYL);
+    doc.setFont("helvetica","normal"); doc.setFontSize(9); setText(INK);
+    doc.text("Posição na turma: "+rank+"º de "+n+" aluno"+(n!=1?"s":"")+(partial?"  (parcial — falta um dia)":""), bx+5, y+27);
+    return y+bh+6;
+  }
+  function drawIndividual(stu){
+    let y=header(data.assessment);
+    kvField(ML,y,"Aluno: ",stu.nome); y+=6;
+    kvField(ML,y,"Turma: ",stu.turmaNome); kvField(ML+78,y,"Nº: ",stu.roll); kvField(ML+120,y,"Data: ",data.data); y+=8;
+    const first = stu.kind==="m2"?"Área":"Disciplina";
+    const cols=[{label:first,w:CW-90,align:"left"},{label:"Acertos",w:30,align:"center"},
+      {label:"Questões",w:30,align:"center"},{label:"% acerto",w:30,align:"center",key:"pct"}];
+    stu.groups.forEach(gr=>{
+      y=sectionTitle(y,gr.titulo);
+      const rows=gr.rows.map(r=>{ const has=r.ac!=null; const p=has&&r.n?Math.round(r.ac/r.n*100):null;
+        return {cells:[{text:r.nome},{text:has?r.ac:"—"},{text:r.n},{text:has?p+"%":"—",pct:p}]}; });
+      if(gr.sub){ const p=gr.sub.has&&gr.sub.n?Math.round(gr.sub.ac/gr.sub.n*100):null;
+        rows.push({style:"sub",cells:[{text:gr.sub.label},{text:gr.sub.ac},{text:gr.sub.n},{text:gr.sub.has?p+"%":"—"}]}); }
+      if(stu.kind!=="m2"){ const p=stu.headline.n?Math.round(stu.headline.ac/stu.headline.n*100):null;
+        rows.push({style:"total",cells:[{text:"Total"},{text:stu.headline.ac},{text:stu.headline.n},{text:p+"%"}]}); }
+      y=drawTable(ML,y,cols,rows)+4;
+    });
+    if(stu.kind==="m2"){
+      y=sectionTitle(y,"Resultado geral (dois dias)");
+      const p=Math.round(stu.headline.ac/180*100);
+      y=drawTable(ML,y,cols,[{style:"total",cells:[{text:stu.headline.label},{text:stu.headline.ac},{text:180},{text:p+"%"}]}])+4;
+    }
+    const mr=mediaRank(stu);
+    drawCompare(y, stu.headline.ac, mr.media, stu.headline.n, mr.rank, mr.n, stu.headline.partial);
+    drawSigns(); drawFoot();
+  }
+  function drawQuadro(){
+    const t=data.students[0];
+    const rows=data.students.slice().sort((a,b)=>b.headline.ac-a.headline.ac);
+    const valNames = data.kind==="m2"? ["Ling.","Hum.","Nat.","Mat."] : t.groups[0].rows.map(r=>r.nome);
+    const nv=valNames.length;
+    const rankW=12, totW=22, pctW=16, valW=landscape?26:20;
+    let nameW=CW-(rankW+totW+pctW)-nv*valW; if(nameW<38) nameW=38;
+    const cols=[{label:"#",w:rankW,align:"center"},{label:"Aluno",w:nameW,align:"left"}];
+    valNames.forEach(nm=>cols.push({label:nm,w:valW,align:"center"}));
+    cols.push({label:"Total",w:totW,align:"center"}); cols.push({label:"%",w:pctW,align:"center",key:"pct"});
+    const maxT = data.kind==="m2"?180:t.headline.n;
+    const valArr=s=> data.kind==="m2"? [s.groups[0].rows[0].ac,s.groups[0].rows[1].ac,s.groups[1].rows[0].ac,s.groups[1].rows[1].ac]
+                                      : s.groups[0].rows.map(r=>r.ac);
+    const n=rows.length, sums=new Array(nv).fill(0); let sumT=0;
+    rows.forEach(s=>{ valArr(s).forEach((x,i)=>sums[i]+=(x||0)); sumT+=s.headline.ac; });
+    let y=header(data.assessment);
+    kvField(ML,y,"Turma: ",t.turmaNome); kvField(ML+78,y,"Alunos: ",String(n)); kvField(ML+120,y,"Data: ",data.data); y+=8;
+    const rh=7.5, bottom=PH-30;
+    y=tHeader(ML,y,cols);
+    rows.forEach((s,i)=>{
+      if(y+rh>bottom){ drawFoot(); doc.addPage("a4", landscape?"landscape":"portrait"); y=header(data.assessment); y=tHeader(ML,y,cols); }
+      const v=valArr(s), p=Math.round(s.headline.ac/maxT*100);
+      const cells=[{text:String(i+1)},{text:s.nome}];
+      v.forEach(x=>cells.push({text:x==null?"—":String(x)}));
+      cells.push({text:String(s.headline.ac),bold:true}); cells.push({text:p+"%",pct:p});
+      y=tRow(ML,y,cols,{cells},rh);
+    });
+    const mc=[{text:""},{text:"Média da turma"}];
+    sums.forEach(sv=>mc.push({text:String(Math.round(sv/n*10)/10)}));
+    const mt=Math.round(sumT/n*10)/10; mc.push({text:String(mt),bold:true}); mc.push({text:Math.round(mt/maxT*100)+"%"});
+    y=tRow(ML,y,cols,{cells:mc,style:"media"},rh);
+    const yy=Math.min(PH-24, y+16), w=70; setDraw([70,70,70]); doc.setLineWidth(0.3); doc.line(ML,yy,ML+w,yy);
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.5); setText(MUTE); doc.text("Assinatura do professor", ML+w/2, yy+5, {align:"center"});
+    drawFoot();
+  }
+  if(data.view==="ind"){
+    data.targets.forEach((stu,idx)=>{ if(idx>0) doc.addPage("a4","portrait"); drawIndividual(stu); });
+  } else {
+    drawQuadro();
+  }
+  return doc;
+}
+
+/* --- diálogo do boletim --- */
+function blTurmasComNotas(){ const fam=blResFamily(); const ids=new Set(fam.map(r=>r.turma).filter(Boolean));
+  return TURMAS.filter(([id])=>ids.has(id)); }
+function blAlunosDaTurma(turma){ return blStudents(turma).map(s=>({val:s.turma+"||"+s.nome, nome:s.nome})); }
+function abrirBoletim(){
+  const fam=blResFamily();
+  if(!fam.length){ toast("Corrija alguns cartões deste modelo primeiro."); return; }
+  const turmas=blTurmasComNotas();
+  const kind=mKind(); const modeloNome = kind==="m2"?"ENEM (2 dias)":kind==="m1"?"Modelo 01":"Personalizado";
+  const ov=document.createElement("div");
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";
+  const box=document.createElement("div");
+  box.style.cssText="background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;max-width:460px;width:100%;max-height:88vh;overflow:auto;padding:16px";
+  box.innerHTML=
+    '<h2 style="margin:0 0 2px">Gerar boletim (PDF)</h2>'
+    +'<div class="sub" style="margin:0 0 12px">Modelo: <b>'+esc(modeloNome)+'</b></div>'
+    +'<label class="fld"><span>Nome da escola</span><input id="blEscola" class="fldsel" type="text" placeholder="Escola ..." value="'+esc(blEscolaGet())+'"></label>'
+    +'<label class="fld" style="margin-top:10px"><span>Título da avaliação (opcional)</span><input id="blTitulo" class="fldsel" type="text" placeholder="'+esc(blAssessment(""))+'"></label>'
+    +'<div class="fld" style="margin-top:12px"><span>Visão</span>'
+      +'<div class="seg" id="blView" style="display:flex;gap:6px;margin-top:6px">'
+        +'<button class="segbtn on" data-v="ind" type="button">Individual</button>'
+        +'<button class="segbtn" data-v="turma" type="button">Quadro da turma</button>'
+      +'</div></div>'
+    +'<label class="fld" style="margin-top:12px"><span>Turma</span><select id="blTurma" class="fldsel"></select></label>'
+    +'<label class="fld" id="blAlunoWrap" style="margin-top:10px"><span>Aluno</span><select id="blAluno" class="fldsel"></select></label>'
+    +'<div style="display:flex;gap:8px;margin-top:16px">'
+      +'<button class="btn primary" id="blGerar" style="flex:1">Gerar PDF</button>'
+      +'<button class="btn" id="blCancel">Cancelar</button>'
+    +'</div>';
+  ov.appendChild(box); document.body.appendChild(ov);
+  const q=s=>box.querySelector(s);
+  let view="ind";
+  const selTurma=q("#blTurma"), selAluno=q("#blAluno"), alunoWrap=q("#blAlunoWrap");
+  function fillTurmas(){ selTurma.innerHTML="";
+    if(view==="ind"){ const o=document.createElement("option"); o.value=""; o.textContent="Todas as turmas"; selTurma.appendChild(o); }
+    turmas.forEach(([id,n])=>{ const o=document.createElement("option"); o.value=id; o.textContent=n; selTurma.appendChild(o); });
+    if(view==="turma" && turmas.length) selTurma.value=turmas[0][0]; }
+  function fillAlunos(){ selAluno.innerHTML=""; const all=document.createElement("option"); all.value=""; all.textContent="Todos os alunos"; selAluno.appendChild(all);
+    blAlunosDaTurma(selTurma.value).forEach(a=>{ const o=document.createElement("option"); o.value=a.val; o.textContent=a.nome; selAluno.appendChild(o); }); }
+  function syncView(){ alunoWrap.style.display = view==="ind"?"":"none"; }
+  fillTurmas(); fillAlunos(); syncView();
+  q("#blView").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+    view=b.dataset.v; [...b.parentNode.children].forEach(x=>x.classList.toggle("on",x===b)); fillTurmas(); fillAlunos(); syncView(); });
+  selTurma.onchange=fillAlunos;
+  q("#blCancel").onclick=()=>ov.remove();
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  q("#blGerar").onclick=async()=>{
+    const escola=q("#blEscola").value.trim(); blEscolaSet(escola);
+    const cfg={ view, turma:selTurma.value, aluno: view==="ind"?selAluno.value:"", escola, titulo:q("#blTitulo").value };
+    if(view==="turma" && !cfg.turma){ toast("Escolha uma turma."); return; }
+    const data=blCollect(cfg);
+    if(!data.students.length){ toast("Não há notas para essa seleção."); return; }
+    if(view==="ind" && !data.targets.length){ toast("Nenhum aluno para gerar."); return; }
+    const btn=q("#blGerar"); btn.textContent="Gerando…"; btn.disabled=true;
+    let JsPDF=null; try{ JsPDF=await loadJsPDF(); }catch(e){}
+    if(!JsPDF){ btn.textContent="Gerar PDF"; btn.disabled=false; toast("Precisa de internet na primeira vez para gerar o PDF."); return; }
+    try{
+      const doc=blDrawPDF(JsPDF,data);
+      const bytes=new Uint8Array(doc.output("arraybuffer"));
+      const base=escola||data.assessment||"boletim";
+      const suf = view==="turma" ? ("-"+selTurma.options[selTurma.selectedIndex].textContent)
+                : (cfg.aluno ? ("-"+data.targets[0].nome) : "-turmas");
+      const filename=("boletim-"+base+suf).replace(/[^0-9A-Za-zÀ-ÿ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase()+".pdf";
+      const ok=await entregarArquivo(bytes, filename, "application/pdf");
+      if(ok){ ov.remove(); toast("Boletim em PDF gerado!"); }
+      else { btn.textContent="Gerar PDF"; btn.disabled=false; toast("Não consegui entregar o arquivo aqui — tente pelo Chrome ou Safari."); }
+    }catch(e){ btn.textContent="Gerar PDF"; btn.disabled=false; toast("Erro ao gerar o boletim."); }
+  };
+}
+var _blBtn=$("#boletimBtn"); if(_blBtn) _blBtn.onclick=abrirBoletim;
+
 
 /* ================= INIT ================= */
 /* pede ao navegador para não descartar os dados; avisa se aberto dentro de outro app */
