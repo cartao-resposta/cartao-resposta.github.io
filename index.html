@@ -59,14 +59,13 @@ header{position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top);bac
 .iconbtn svg{width:18px;height:18px}
 
 /* tabs */
-.tabs{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;
-  padding:4px;margin:14px 0}
-.tab{flex:1;border:0;background:transparent;color:var(--muted);font-weight:600;font-size:13.5px;
-  padding:9px 6px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px}
-.tab svg{width:16px;height:16px}
-.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
-.tab .badge{background:var(--primary);color:var(--primary-ink);font-size:11px;border-radius:20px;
-  min-width:18px;height:18px;padding:0 5px;display:grid;place-items:center;font-family:"Space Grotesk"}
+.tabs{display:flex;gap:6px;background:transparent;border:0;border-radius:0;padding:0;margin:14px 0}
+.tab{position:relative;flex:1;border:0;background:var(--primary-soft);color:var(--primary);font-weight:500;font-size:11.5px;
+  padding:9px 4px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.tab svg{width:18px;height:18px}
+.tab[aria-selected="true"]{background:var(--primary);color:var(--primary-ink);box-shadow:none}
+.tab .badge{position:absolute;top:5px;right:8px;background:#fff;color:#0F6E56;font-size:10.5px;border-radius:20px;
+  min-width:16px;height:16px;padding:0 4px;display:grid;place-items:center;font-family:"Space Grotesk";font-weight:600}
 
 section{display:none;animation:fade .18s ease}
 section.active{display:block}
@@ -160,6 +159,44 @@ tr.me td{font-weight:700}
 .sig{text-align:center;font-size:12.5px;color:var(--muted);padding:0 0 26px;letter-spacing:.2px}
 .sig b{color:var(--ink);font-weight:600}
 .sig .heart{color:var(--primary)}
+.segbtn{flex:1;padding:9px 8px;border:1px solid var(--line2);background:var(--surface);color:var(--muted);border-radius:10px;font-size:13px;font-family:inherit}
+.segbtn.on{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.qrow{border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:7px;background:var(--surface)}
+.qrow .top{display:flex;align-items:center;gap:9px}
+.qrow .qn{font-family:"Space Grotesk";font-size:13px;color:var(--muted);min-width:42px}
+.qrow .gab{font-family:"Space Grotesk";font-weight:600;color:var(--ok);min-width:16px}
+.qbar{flex:1;height:9px;border-radius:5px;background:var(--surface2);overflow:hidden}
+.qbar > span{display:block;height:100%;border-radius:5px}
+.qrow .pct{font-size:12.5px;color:var(--ink);min-width:38px;text-align:right}
+.qrow.hard{border-color:var(--bad);background:var(--bad-soft)}
+.qdist{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.qdist .cell{font-size:11.5px;color:var(--muted);padding:2px 6px;border-radius:6px;background:var(--surface2)}
+.qdist .cell.key{background:var(--ok-soft);color:var(--ok)}
+.qdist .cell.most{outline:1.5px solid var(--bad)}
+/* splash */
+#splash{position:fixed;inset:0;z-index:1000;background:var(--primary);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
+#splash.gone{opacity:0;pointer-events:none}
+.splash-name{color:#fff;font-family:"Space Grotesk";font-size:21px;font-weight:600;letter-spacing:-.01em}
+.splash-sub{color:rgba(255,255,255,.75);font-size:12.5px;margin-top:-8px}
+/* overlays (tutorial / info) */
+.ovl{position:fixed;inset:0;z-index:900;background:rgba(6,20,16,.55);display:flex;align-items:center;
+  justify-content:center;padding:18px}
+.ovl-card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:16px;
+  max-width:440px;width:100%;max-height:86vh;overflow:auto;padding:20px}
+.ovl-card h2{font-size:19px;margin:0 0 4px}
+.ovl-card ol{margin:14px 0;padding-left:20px}
+.ovl-card li{margin:9px 0;line-height:1.5;font-size:14px}
+.ovl-card .step-ic{color:var(--primary)}
+.frow{margin:11px 0}
+.frow > label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px}
+.frow input[type=text], .frow select{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink)}
+.disc-row{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.disc-row input.nome{flex:1}
+.disc-row input.qtd{width:70px;text-align:center}
+.disc-row .del{border:1px solid var(--line2);background:var(--surface);color:var(--bad);border-radius:8px;width:36px;height:36px;flex:0 0 auto;font-size:15px}
 .divlabel{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;font-weight:600;margin:14px 0 10px}
 .divlabel::before,.divlabel::after{content:"";height:1px;background:var(--line);flex:1}
 .spin{width:18px;height:18px;border:2px solid var(--primary-soft);border-top-color:var(--primary);
@@ -193,6 +230,7 @@ tr.me td{font-weight:700}
       <option value="m1">Modelo 01 — 40 questões</option>
       <option value="m2d1">ENEM · 1º dia (questões 1–90)</option>
       <option value="m2d2">ENEM · 2º dia (questões 91–180)</option>
+      <option value="custom" id="optCustom" hidden>Personalizado (folha criada por você)</option>
     </select>
   </label>
 
@@ -277,6 +315,11 @@ tr.me td{font-weight:700}
           Ler gabarito de um cartão</button>
         <button class="btn ghost danger" id="clearKeyBtn">Limpar tudo</button>
       </div>
+      <div class="rowbtns" style="margin-bottom:6px">
+        <button class="btn primary" id="criarFolhaBtn" style="flex:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/></svg>
+          Criar folha de resposta (PDF)</button>
+      </div>
       <input type="file" id="keyFile" accept="image/*" capture="environment" class="hidden">
       <div class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Preencha um cartão em branco com as respostas certas e fotografe para preencher o gabarito de uma vez.</span></div>
     </div>
@@ -298,8 +341,13 @@ tr.me td{font-weight:700}
         </div>
       </div>
       <label class="fld" style="margin:12px 0 0"><span>Ver notas de</span><select id="filtroNotas" class="fldsel"></select></label>
+      <div class="seg" id="notasSeg" style="display:flex;gap:6px;margin-top:12px">
+        <button class="segbtn on" data-view="notas" type="button">Notas</button>
+        <button class="segbtn" data-view="analise" type="button">Análise por questão</button>
+      </div>
     </div>
     <div id="resultsBody"></div>
+    <div id="analiseBody" class="hidden"></div>
   </section>
 
   <!-- ============ TURMAS ============ -->
@@ -352,6 +400,64 @@ tr.me td{font-weight:700}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div id="splash">
+  <svg width="86" height="86" viewBox="0 0 86 86" fill="none" aria-hidden="true">
+    <circle cx="43" cy="43" r="33" stroke="#fff" stroke-width="9"/>
+    <path d="M29 44l10 11 19-23" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div class="splash-name">Leitor de Cartão</div>
+  <div class="splash-sub">Correção por foto</div>
+</div>
+<script>setTimeout(function(){var s=document.getElementById('splash');if(s){s.style.transition='opacity .45s ease';s.style.opacity='0';setTimeout(function(){if(s&&s.parentNode)s.remove();},520);}},850);</script>
+
+<div id="folhaOvl" class="ovl hidden">
+  <div class="ovl-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <h2>Criar folha de resposta</h2>
+      <button class="btn ghost" id="folhaClose" aria-label="Fechar" style="padding:6px 11px">✕</button>
+    </div>
+    <div class="sub">Gera um PDF pronto para imprimir. O app também vai corrigir as folhas criadas aqui.</div>
+    <div class="frow"><label>Nome da escola</label><input type="text" id="fEscola" placeholder="Escola ..."></div>
+    <div class="frow"><label>Título do simulado (opcional)</label><input type="text" id="fTitulo" placeholder="Simulado bimestral"></div>
+    <div class="frow"><label>Logo da escola (opcional)</label><input type="file" id="fLogo" accept="image/*"></div>
+    <div class="frow"><label>Campos do cabeçalho</label>
+      <div class="chips">
+        <label class="chk"><input type="checkbox" checked disabled> Nome do aluno</label>
+        <label class="chk"><input type="checkbox" id="cTurma" checked> Turma</label>
+        <label class="chk"><input type="checkbox" id="cData" checked> Data</label>
+        <label class="chk"><input type="checkbox" id="cInsc"> Nº de inscrição</label>
+        <label class="chk"><input type="checkbox" id="cProf"> Professor(a)</label>
+      </div>
+    </div>
+    <div class="frow"><label>Alternativas por questão</label>
+      <select id="fAlt" class="fldsel"><option value="5">A a E (5 opções)</option><option value="4">A a D (4 opções)</option></select>
+    </div>
+    <div class="frow"><label>Cópias por página (A4)</label>
+      <select id="fCopias" class="fldsel"><option value="2">2 por página — economiza papel (corte ao meio)</option><option value="1">1 por página</option></select>
+    </div>
+    <div class="frow"><label>Disciplinas e número de questões</label>
+      <div id="discList"></div>
+      <button class="btn" id="addDisc" style="padding:7px 11px;font-size:13px">+ Adicionar disciplina</button>
+      <div class="sub" id="totalQ" style="margin-top:8px">Total: 0 questões</div>
+    </div>
+    <button class="btn primary" id="gerarPdfBtn" style="width:100%;margin-top:8px">Gerar PDF</button>
+  </div>
+</div>
+
+<div id="tutorial" class="ovl hidden">
+  <div class="ovl-card">
+    <h2>Bem-vindo ao Leitor de Cartão</h2>
+    <div class="sub">Corrigir provas por foto, em 3 passos:</div>
+    <ol>
+      <li><b>Monte o gabarito</b> na aba <b>Gabarito</b> — marque a resposta certa de cada questão. Escolha o cartão (Modelo 01 ou ENEM) lá no topo.</li>
+      <li><b>Cadastre as turmas</b> na aba <b>Turmas</b> (opcional, mas organiza as notas por aluno).</li>
+      <li><b>Fotografe o cartão</b> na aba <b>Corrigir</b> — o app lê as marcações e salva a nota. Depois, veja tudo em <b>Notas</b>.</li>
+    </ol>
+    <div class="sub">Dica: imprima o cartão-resposta padrão e peça que preencham as bolhas com caneta preta, sem rasurar.</div>
+    <button class="btn primary" id="tutOk" style="width:100%;margin-top:16px">Começar</button>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -466,12 +572,26 @@ function readM2(gray,H,sens){
   }
   return {answers,meta,roll:""};
 }
+function readCustom(gray,H,sens){
+  const sp=store.custom.spec; const LOW=markFromSens(sens), HIGH=0.65;
+  const answers=Array(sp.total).fill(null), meta=Array(sp.total);
+  for(const cell of sp.cells){ const u0=sp.ansU[cell.col], v=sp.qV0+cell.row*sp.qDV;
+    const a=applyH(H,u0,v), bx=applyH(H,u0+sp.dU,v); const step=Math.hypot(bx[0]-a[0],bx[1]-a[1]);
+    const rin=step*0.32, ra=step*0.44, rb=step*0.66; const inks=[];
+    for(let k=0;k<sp.nalt;k++){ const p=applyH(H,u0+k*sp.dU,v); const inner=discValsM2(gray,p[0],p[1],rin); const paper=ringMedianM2(gray,p[0],p[1],ra,rb); const thr=paper-40; let d=0; for(let i=0;i<inner.length;i++) if(inner[i]<thr) d++; inks.push(inner.length?d/inner.length:0); }
+    const strong=[],weak=[]; for(let i=0;i<sp.nalt;i++){ if(inks[i]>=HIGH)strong.push(i); else if(inks[i]>=LOW)weak.push(i); }
+    let ans=null,flag=null;
+    if(strong.length>=2)flag="dupla"; else if(strong.length===1)ans=CHOICES[strong[0]]; else if(weak.length>=2)flag="dupla"; else if(weak.length===1)ans=CHOICES[weak[0]]; else flag="branco";
+    answers[cell.q-1]=ans; meta[cell.q-1]={q:cell.q,ans,flag,ink:inks}; }
+  return {answers,meta,roll:""};
+}
 /* -- perfis -- */
 const AREAS_M2={ m2d1:["Linguagens","Humanas"], m2d2:["Ciências da Natureza","Matemática"] };
 const MODELOS={
   m1:  {mod:"m1",  kind:"m1", label:"Modelo 01 — 40 questões", nq:NQ,  ncol:NCOL,  nrow:NROW},
   m2d1:{mod:"m2d1",kind:"m2", label:"ENEM · 1º dia (1–90)",   nq:90, ncol:NCOL2, nrow:NROW2, base:0,  areasKey:"m2d1"},
-  m2d2:{mod:"m2d2",kind:"m2", label:"ENEM · 2º dia (91–180)", nq:90, ncol:NCOL2, nrow:NROW2, base:90, areasKey:"m2d2"}
+  m2d2:{mod:"m2d2",kind:"m2", label:"ENEM · 2º dia (91–180)", nq:90, ncol:NCOL2, nrow:NROW2, base:90, areasKey:"m2d2"},
+  custom:{mod:"custom",kind:"custom", label:"Personalizado (folha criada por você)"}
 };
 let MODELO = localStorage.getItem?.("omr_modelo") || "m1";
 if(!MODELOS[MODELO]) MODELO="m1";
@@ -487,10 +607,24 @@ function ensureKey2(mod){
 }
 ensureKey2("m2d1"); ensureKey2("m2d2");
 function saveKeys2(){ save("omr_keys2",store.keys2); }
+/* modelo Personalizado (folha gerada pelo app) */
+store.custom = loadJSON("omr_custom", null);
+function customReady(){ return !!(store.custom && store.custom.spec && store.custom.spec.cells); }
+function setCustomSpec(spec){
+  const prev=store.custom;
+  const same = prev && prev.spec && prev.spec.total===spec.total && JSON.stringify((prev.spec.discRanges||[]))===JSON.stringify(spec.discRanges||[]);
+  if(same) store.custom={spec, ans:prev.ans, escola:prev.escola, titulo:prev.titulo};
+  else { store.custom={spec, ans:Array(spec.total).fill(null)};
+    store.res=store.res.filter(r=>(r.mod||"m1")!=="custom"); saveRes();
+    if(store.done2){ store.done2.custom={}; saveDone2(); }
+  }
+  save("omr_custom",store.custom);
+}
+function saveCustom(){ save("omr_custom",store.custom); }
 /* "corrigidos" por modelo */
 store.done2 = loadJSON("omr_done2", null);
-if(!store.done2){ store.done2={ m1: store.done||{}, m2d1:{}, m2d2:{} }; }
-for(const m of ["m1","m2d1","m2d2"]) if(!store.done2[m]) store.done2[m]={};
+if(!store.done2){ store.done2={ m1: store.done||{}, m2d1:{}, m2d2:{}, custom:{} }; }
+for(const m of ["m1","m2d1","m2d2","custom"]) if(!store.done2[m]) store.done2[m]={};
 function saveDone2(){ save("omr_done2",store.done2); }
 function doneMap(){ return store.done2[MODELO]; }
 /* migração das notas antigas: marca modelo m1 */
@@ -498,22 +632,23 @@ let _resMig=false; store.res.forEach(r=>{ if(!r.mod){ r.mod="m1"; _resMig=true; 
 /* ========== acessores do modelo ativo ========== */
 function mKind(){ return MP().kind; }
 function mNROW(){ return MP().nrow; }
-function mNCOL(){ return MP().ncol; }
-function mNQ(){ return MP().nq; }
+function mNCOL(){ return mKind()==="custom"? store.custom.spec.ncol : MP().ncol; }
+function mNQ(){ return mKind()==="custom"? store.custom.spec.total : MP().nq; }
 function mBase(){ return MP().base||0; }
 function mQNum(c,r){ return mBase() + c*mNROW() + r + 1; }
-function mKeyAns(){ return mKind()==="m1"? store.key.ans : ensureKey2(MODELO).ans; }
-function mAreas(){ return mKind()==="m1"? null : ensureKey2(MODELO).areas; }
-function mAreaOf(idx){ return idx<45?0:1; }
+function mKeyAns(){ return mKind()==="m1"? store.key.ans : mKind()==="custom"? store.custom.ans : ensureKey2(MODELO).ans; }
+function mAreas(){ return mKind()==="m1"? null : mKind()==="custom"? store.custom.spec.discRanges.map(d=>d.nome) : ensureKey2(MODELO).areas; }
+function mAreaOf(idx){ if(mKind()==="custom"){ const dr=store.custom.spec.discRanges; let acc=0; for(let a=0;a<dr.length;a++){ acc+=dr[a].n; if(idx<acc) return a; } return dr.length-1; } return idx<45?0:1; }
 function mDetect(gray){ return mKind()==="m1"? detectCorners(gray) : detectCornersM2(gray); }
-function mRead(gray,H,sens){ return mKind()==="m1"? readSheet(gray,H,sens) : readM2(gray,H,sens); }
+function mRead(gray,H,sens){ return mKind()==="m1"? readSheet(gray,H,sens) : mKind()==="custom"? readCustom(gray,H,sens) : readM2(gray,H,sens); }
 function mAnsUV(c,r,ch){ return mKind()==="m1"? ansUV(c,r,ch) : ansUV2(c,r,ch); }
 function mStep(H,c,r){ return mKind()==="m1"? localScale(H,L.ansColU[c],L.qV0+r*L.qDV) : localStep2(H,L2.ansAU[c],L2.qV0+r*L2.qDV); }
-function mIsActive(i){ return mKind()==="m1"? isActive(i) : i<90; }
-function mKeyComplete(){ if(mKind()==="m1") return keyComplete(); const a=ensureKey2(MODELO).ans; for(let i=0;i<90;i++) if(a[i]==null) return false; return true; }
+function mIsActive(i){ return mKind()==="m1"? isActive(i) : i<mNQ(); }
+function mKeyComplete(){ if(mKind()==="m1") return keyComplete(); const a=mKeyAns(); const n=mNQ(); for(let i=0;i<n;i++) if(a[i]==null) return false; return true; }
 
 /* ---------- utilidades ---------- */
 const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2000);}
 // confirmação sem depender de confirm() nativo: primeiro toque "arma", segundo executa
 function armButton(btn, confirmLabel, action){
@@ -549,7 +684,7 @@ function selectTab(t){
     $("#tab-"+x).setAttribute("aria-selected",x===t);
     $("#sec-"+x).classList.toggle("active",x===t);
   });
-  if(t==="resultados") renderResults();
+  if(t==="resultados") renderNotasView();
   if(t==="turmas") loadRosterEditor();
   if(t==="gabarito") updateGabaritoHead();
   if(t==="corrigir"){
@@ -706,6 +841,7 @@ $("#impDo").onclick=()=>{
 /* ================= GABARITO ================= */
 function buildKeyUI(){
   if(mKind()==="m2") return buildKeyUIM2();
+  if(mKind()==="custom") return buildKeyUICustom();
   const root=$("#keyBuild"); root.innerHTML="";
   for(let c=0;c<NDISC;c++){
     const card=document.createElement("div"); card.className="card";
@@ -779,8 +915,37 @@ function buildKeyUIM2(){
   }
 }
 function updateKeyStatus(){ $("#keyWarn").classList.toggle("hidden",mKeyComplete()); }
+function buildKeyUICustom(){
+  const root=$("#keyBuild"); root.innerHTML=""; const sp=store.custom.spec;
+  const CH=CHOICES.slice(0,sp.nalt); let base=0;
+  sp.discRanges.forEach((dd,di)=>{
+    const card=document.createElement("div"); card.className="card";
+    const disc=document.createElement("div"); disc.className="disc";
+    const head=document.createElement("div"); head.className="disc-head";
+    head.innerHTML='<span class="disc-dot" style="background:'+DISC_COLORS[di%DISC_COLORS.length]+'"></span>';
+    const nm=document.createElement("div"); nm.style.cssText="flex:1;font-weight:600"; nm.textContent=dd.nome||("Disciplina "+(di+1));
+    head.appendChild(nm);
+    const rng=document.createElement("span"); rng.style.cssText="flex:0 0 auto;color:var(--muted);font-size:12px"; rng.textContent=(base+1)+"–"+(base+dd.n);
+    head.appendChild(rng); disc.appendChild(head);
+    for(let j=0;j<dd.n;j++){
+      const i=base+j;
+      const row=document.createElement("div"); row.className="krow";
+      row.innerHTML='<div class="qn">'+(i+1)+'</div>';
+      CH.forEach(ch=>{
+        const b=document.createElement("button"); b.className="opt"; b.textContent=ch;
+        b.setAttribute("aria-pressed", store.custom.ans[i]===ch);
+        b.onclick=()=>{ store.custom.ans[i]=(store.custom.ans[i]===ch? null : ch); saveCustom();
+          row.querySelectorAll(".opt").forEach(o=>o.setAttribute("aria-pressed", o.textContent===store.custom.ans[i])); updateKeyStatus(); };
+        row.appendChild(b);
+      });
+      disc.appendChild(row);
+    }
+    card.appendChild(disc); root.appendChild(card); base+=dd.n;
+  });
+}
 $("#clearKeyBtn").onclick=()=>{ armButton($("#clearKeyBtn"),"Apagar tudo?",()=>{
   if(mKind()==="m1"){ store.key.ans=Array(NQ).fill(null); saveKey(); }
+  else if(mKind()==="custom"){ store.custom.ans=Array(store.custom.spec.total).fill(null); saveCustom(); }
   else { ensureKey2(MODELO).ans=Array(90).fill(null); saveKeys2(); }
   buildKeyUI();updateKeyStatus();toast("Gabarito apagado.");}); };
 
@@ -1050,6 +1215,7 @@ function startResult(){
 $("#adjustBtn").onclick=enterAdjust;
 function renderReview(){
   if(mKind()==="m2") return renderReviewM2();
+  if(mKind()==="custom") return renderReviewCustom();
   const key=store.key.ans;
   let total=0; const per=Array(NDISC).fill(0);
   const grid=$("#reviewGrid"); grid.innerHTML="";
@@ -1103,10 +1269,37 @@ function renderReviewM2(){
     dg.appendChild(chip);
   }
 }
+function renderReviewCustom(){
+  const sp=store.custom.spec; const key=mKeyAns(); const areas=mAreas(); const complete=mKeyComplete();
+  const nd=areas.length; const per=Array(nd).fill(0); let total=0;
+  const grid=$("#reviewGrid"); grid.innerHTML="";
+  for(let i=0;i<sp.total;i++){
+    const a=editAns[i], k=key[i], area=mAreaOf(i);
+    const dup = a==null && editFlags && editFlags[i]==="dupla";
+    const div=document.createElement("button"); div.className="revq";
+    let cls="plain", show=(a||"—");
+    if(dup){ cls="dupq"; show="✕"; div.title="Dupla marcação — questão anulada"; }
+    else if(a==null) cls="warnq";
+    else if(k!=null){ if(a===k){cls="ok";total++;per[area]++;} else cls="bad"; }
+    div.classList.add(cls);
+    div.innerHTML='<div class="qq">'+(i+1)+'</div><div class="aa">'+show+'</div>';
+    div.onclick=()=>cycleAnswer(i,div);
+    grid.appendChild(div);
+  }
+  $("#scoreTotal").textContent = complete? total+"/"+sp.total : "—";
+  const dg=$("#discScores"); dg.innerHTML="";
+  for(let a=0;a<nd;a++){
+    const chip=document.createElement("div"); chip.className="discchip";
+    chip.innerHTML='<div class="dl"><span class="disc-dot" style="width:9px;height:9px;border-radius:50%;background:'+DISC_COLORS[a%DISC_COLORS.length]+'"></span>'+esc(areas[a])+'</div>'+
+      '<div class="dv">'+(complete?per[a]+"/"+sp.discRanges[a].n:"—")+'</div>';
+    dg.appendChild(chip);
+  }
+}
 function cycleAnswer(i,div){
   if(editFlags) editFlags[i]=null;
+  const nch = mKind()==="custom"? store.custom.spec.nalt : NCH;
   const cur=editAns[i]; let idx=cur==null?-1:CHOICES.indexOf(cur);
-  idx++; editAns[i]= idx>=NCH? null : CHOICES[idx];
+  idx++; editAns[i]= idx>=nch? null : CHOICES[idx];
   renderReview(); drawOverlay();
 }
 function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -1127,14 +1320,27 @@ function drawOverlay(){
       ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(p[0],p[1],work.w/220,0,7); ctx.fill(); });
   }
   if(H){
-    const key=mKeyAns(), nc=mNCOL(), nr=mNROW(), complete=mKeyComplete();
-    for(let c=0;c<nc;c++)for(let r=0;r<nr;r++){
-      const i=c*nr+r, a=editAns[i], k=key[i];
-      const step=mStep(H,c,r), rad=Math.max(4,step*0.34);
-      if(a){ const ci=CHOICES.indexOf(a); const[u,v]=mAnsUV(c,r,ci); const[px,py]=applyH(H,u,v);
+    const key=mKeyAns(), complete=mKeyComplete();
+    if(mKind()==="custom"){
+      const sp=store.custom.spec;
+      for(const cell of sp.cells){ const i=cell.q-1, a=editAns[i], k=key[i];
+        if(!a) continue;
+        const u0=sp.ansU[cell.col], v=sp.qV0+cell.row*sp.qDV;
+        const A=applyH(H,u0,v), Bx=applyH(H,u0+sp.dU,v); const step=Math.hypot(Bx[0]-A[0],Bx[1]-A[1]), rad=Math.max(4,step*0.34);
+        const ci=CHOICES.indexOf(a); const[px,py]=applyH(H,u0+ci*sp.dU,v);
         let col="#0F6E56"; if(complete&&k!=null) col = a===k? "#1E9E6A":"#E23D4B";
-        ctx.strokeStyle=col; ctx.lineWidth=Math.max(2,work.w/260);
-        ctx.beginPath(); ctx.arc(px,py,rad,0,7); ctx.stroke();
+        ctx.strokeStyle=col; ctx.lineWidth=Math.max(2,work.w/260); ctx.beginPath(); ctx.arc(px,py,rad,0,7); ctx.stroke();
+      }
+    } else {
+      const nc=mNCOL(), nr=mNROW();
+      for(let c=0;c<nc;c++)for(let r=0;r<nr;r++){
+        const i=c*nr+r, a=editAns[i], k=key[i];
+        const step=mStep(H,c,r), rad=Math.max(4,step*0.34);
+        if(a){ const ci=CHOICES.indexOf(a); const[u,v]=mAnsUV(c,r,ci); const[px,py]=applyH(H,u,v);
+          let col="#0F6E56"; if(complete&&k!=null) col = a===k? "#1E9E6A":"#E23D4B";
+          ctx.strokeStyle=col; ctx.lineWidth=Math.max(2,work.w/260);
+          ctx.beginPath(); ctx.arc(px,py,rad,0,7); ctx.stroke();
+        }
       }
     }
   }
@@ -1215,6 +1421,10 @@ $("#saveBtn").onclick=()=>{
     per=Array(NDISC).fill(0);
     for(let i=0;i<NQ;i++){ if(isActive(i)&&editAns[i]!=null&&editAns[i]===key[i]){total++;per[(i/NROW)|0]++;} }
     nq=totalQ(); extra={counts:store.key.count.slice()};
+  }else if(mKind()==="custom"){
+    const sp=store.custom.spec; const nd=sp.discRanges.length; per=Array(nd).fill(0);
+    for(let i=0;i<sp.total;i++){ if(editAns[i]!=null&&editAns[i]===key[i]){total++;per[mAreaOf(i)]++;} }
+    nq=sp.total; extra={areas:mAreas().slice(), discN:sp.discRanges.map(d=>d.n)};
   }else{
     per=[0,0];
     for(let i=0;i<90;i++){ if(editAns[i]!=null&&editAns[i]===key[i]){total++;per[mAreaOf(i)]++;} }
@@ -1310,6 +1520,19 @@ function renderResults(){
     mrow='<tr class="me"><td>Média</td><td>—</td><td>—</td>';
     for(let c=0;c<NDISC;c++) mrow+='<td class="n">'+avg(r=>r.per[c]).toFixed(1)+'</td>';
     mrow+='<td class="n">'+avg(r=>r.total).toFixed(1)+nqLabel+'</td><td></td></tr>';
+  } else if(mKind()==="custom"){
+    const areas=mAreas();
+    head='<tr><th>Aluno</th><th>Turma</th>';
+    for(let c=0;c<areas.length;c++) head+='<th class="n" title="'+esc(areas[c])+'">'+esc(shortDisc(areas[c],c))+'</th>';
+    head+='<th class="n">Total</th><th></th></tr>';
+    list.slice().reverse().forEach(r=>{
+      rows+='<tr><td>'+esc(r.name)+'</td><td>'+esc(r.turmaNome||"—")+'</td>';
+      for(let c=0;c<areas.length;c++) rows+='<td class="n">'+(r.per&&r.per[c]!=null?r.per[c]:"—")+'</td>';
+      rows+='<td class="n">'+r.total+"/"+(r.nq||"?")+'</td><td><button class="btn ghost danger" style="padding:5px 9px;font-size:12px" data-del="'+r.id+'">excluir</button></td></tr>';
+    });
+    mrow='<tr class="me"><td>Média</td><td>—</td>';
+    for(let c=0;c<areas.length;c++) mrow+='<td class="n">'+avg(r=>(r.per&&r.per[c])||0).toFixed(1)+'</td>';
+    mrow+='<td class="n">'+avg(r=>r.total).toFixed(1)+nqLabel+'</td><td></td></tr>';
   } else {
     const areas=mAreas();
     head='<tr><th>Aluno</th><th>Turma</th>'
@@ -1356,7 +1579,68 @@ function liberarAluno(r){ // remove um aluno da lista de "corrigidos" da turma d
     dm[r.turma]=dm[r.turma].filter(a=>a!==nome);
   }
 }
-$("#filtroNotas").onchange=renderResults;
+let notasView="notas", anaSort="ordem";
+$$("#notasSeg .segbtn").forEach(b=>{ b.onclick=()=>{
+  notasView=b.dataset.view;
+  $$("#notasSeg .segbtn").forEach(x=>x.classList.toggle("on",x===b));
+  renderNotasView();
+}; });
+function renderNotasView(){
+  const ana = notasView==="analise";
+  $("#resultsBody").classList.toggle("hidden", ana);
+  $("#analiseBody").classList.toggle("hidden", !ana);
+  if(ana) renderAnalise(); else renderResults();
+}
+$("#filtroNotas").onchange=renderNotasView;
+function renderAnalise(){
+  const body=$("#analiseBody"); const list=filteredRes();
+  if(list.length===0){ body.innerHTML='<div class="card"><div class="sub">Corrija alguns cartões desta seleção para ver a análise por questão.</div></div>'; return; }
+  const key=mKeyAns(), nq=mNQ(), base=mBase(), n=list.length;
+  const stats=[]; let totalAcertos=0, totalResp=0;
+  for(let i=0;i<nq;i++){
+    if(!mIsActive(i)) continue;
+    const counts={A:0,B:0,C:0,D:0,E:0}; let branco=0, acertos=0;
+    for(const r of list){ const a=r.answers? r.answers[i]:null;
+      if(a==null) branco++; else counts[a]=(counts[a]||0)+1;
+      if(a!=null && a===key[i]) acertos++; }
+    const pct=Math.round(acertos/n*100); totalAcertos+=acertos; totalResp+=n;
+    let most=null, mostN=0;
+    for(const ch of CHOICES){ if(ch!==key[i] && (counts[ch]||0)>mostN){ most=ch; mostN=counts[ch]; } }
+    stats.push({i, q:base+i+1, correct:key[i], pct, counts, branco, most, mostN,
+      area: mKind()==="m2"? mAreaOf(i) : (i/mNROW())|0});
+  }
+  const mediaGeral = totalResp? Math.round(totalAcertos/totalResp*100) : 0;
+  const groups={}; stats.forEach(s=>{ (groups[s.area]=groups[s.area]||[]).push(s); });
+  const areaName = mKind()==="m2"? (a=>mAreas()[a]) : (a=>store.key.disc[a]);
+  const areasHtml = Object.keys(groups).map(Number).sort((a,b)=>a-b).map(a=>{
+    const g=groups[a]; const m=Math.round(g.reduce((s,x)=>s+x.pct,0)/g.length);
+    return '<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+esc(areaName(a)||("Bloco "+(a+1)))+'</span><span>'+m+'%</span></div>';
+  }).join("");
+  const ordered=stats.slice();
+  if(anaSort==="erros") ordered.sort((a,b)=>a.pct-b.pct || a.i-b.i);
+  let html='<div class="card">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+      +'<div><h2 style="font-size:16px">Análise por questão</h2><div class="sub" style="margin:2px 0 0">'+n+' cartão'+(n!=1?'ões':'')+' · média geral '+mediaGeral+'% de acertos</div></div>'
+      +'<button class="btn" id="anaSortBtn" style="padding:7px 11px;font-size:12.5px">'+(anaSort==="erros"?"Ordem das questões":"Mais erradas")+'</button>'
+    +'</div>'
+    +(areasHtml?'<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">'+areasHtml+'</div>':'')
+    +'</div><div style="margin-top:10px">';
+  ordered.forEach(s=>{
+    const hard=s.pct<50;
+    const barcol = s.pct>=70?'var(--ok)':(s.pct>=50?'var(--warn)':'var(--bad)');
+    html+='<div class="qrow'+(hard?' hard':'')+'">'
+      +'<div class="top"><span class="qn">Q'+s.q+'</span><span class="gab">'+(s.correct||'—')+'</span>'
+      +'<span class="qbar"><span style="width:'+s.pct+'%;background:'+barcol+'"></span></span>'
+      +'<span class="pct">'+s.pct+'%</span></div>'
+      +'<div class="qdist">'
+      + CHOICES.map(ch=>'<span class="cell'+(ch===s.correct?' key':'')+((ch===s.most&&s.mostN>0)?' most':'')+'">'+ch+' '+(s.counts[ch]||0)+'</span>').join('')
+      + (s.branco>0?'<span class="cell">— '+s.branco+'</span>':'')
+      +'</div></div>';
+  });
+  html+='</div>';
+  body.innerHTML=html;
+  $("#anaSortBtn").onclick=()=>{ anaSort = anaSort==="erros"?"ordem":"erros"; renderAnalise(); };
+}
 function shortDisc(name,c){ name=(name||"").trim(); if(!name)return"D"+(c+1); return name.length>10?name.slice(0,9)+"…":name; }
 function totalNoDia(mod,turma,nome){ const r=store.res.find(x=>(x.mod||"m1")===mod && x.turma===turma && (x.aluno||x.name)===nome); return r? r.total : null; }
 function geralDe(r){ const nome=r.aluno||r.name; const d1=totalNoDia("m2d1",r.turma,nome), d2=totalNoDia("m2d2",r.turma,nome);
@@ -1400,6 +1684,14 @@ function xlsxBytes(sheetName,rows){
 }
 function notasRows(list){
   const n=list.length, avg=sel=>n?Math.round(list.reduce((s,r)=>s+sel(r),0)/n*10)/10:0;
+  if(mKind()==="custom"){
+    const areas=mAreas();
+    const header=["Aluno","Turma",...areas,"Total"];
+    const rows=[header];
+    list.forEach(r=>{ rows.push([r.name, r.turmaNome||"", ...areas.map((_,c)=>(r.per&&r.per[c]!=null?r.per[c]:"")), r.total]); });
+    rows.push(["Média","",...areas.map((_,c)=>avg(r=>(r.per&&r.per[c])||0)),avg(r=>r.total)]);
+    return rows;
+  }
   if(mKind()==="m2"){
     const areas=mAreas();
     const header=["Aluno","Turma",areas[0],areas[1],"Total (dia)","Geral (2 dias)"];
@@ -1513,20 +1805,135 @@ function updateGabaritoHead(){
   if(mKind()==="m2"){
     t.textContent="Gabarito — "+MODELOS[MODELO].label;
     s.textContent="Marque a alternativa certa das 90 questões, nas duas áreas (dá para renomear as áreas). Fica salvo no aparelho.";
+  }else if(mKind()==="custom"){
+    t.textContent="Gabarito — folha personalizada";
+    s.textContent="Marque a alternativa certa de cada questão da folha que você criou ("+store.custom.spec.total+" questões). Fica salvo no aparelho.";
   }else{
     t.textContent="Gabarito e disciplinas";
     s.textContent="Nomeie as quatro disciplinas e marque a alternativa correta de cada questão. Fica salvo no aparelho.";
   }
 }
+function refreshModeloOptions(){ const o=$("#optCustom"); if(o) o.hidden=!customReady(); }
 function onModeloChange(){
   $("#modeloSel").value=MODELO;
   buildKeyUI(); updateKeyStatus(); updateResCount(); updateGabaritoHead();
   const a=activeTab();
   if(a==="corrigir"){ if($("#procCard").classList.contains("hidden")) resetCapture(); $("#keyWarn").classList.toggle("hidden",mKeyComplete()); fillTurmaPicker(); }
-  else if(a==="resultados") renderResults();
+  else if(a==="resultados") renderNotasView();
   else if(a==="turmas") loadRosterEditor();
 }
-$("#modeloSel").onchange=()=>{ setModelo($("#modeloSel").value); onModeloChange(); };
+$("#modeloSel").onchange=()=>{
+  const v=$("#modeloSel").value;
+  if(v==="custom" && !customReady()){ toast("Crie uma folha primeiro (botão 'Criar folha' na aba Gabarito)."); $("#modeloSel").value=MODELO; return; }
+  setModelo(v); onModeloChange();
+};
+
+/* ================= GERADOR DE FOLHA DE RESPOSTA (PDF) ================= */
+const CH_ALL=["A","B","C","D","E"];
+const FG_MARGIN=12, FG_AL=16, FG_AR=194, FG_AB=285, FG_MSZ=5, FG_PW=210;
+function fgFitGrid(discs, availW, availH, nalt){
+  const minCol = 9 + nalt*5.1; const maxCols=Math.max(1,Math.floor(availW/minCol)); let best=null;
+  for(let rh=5.6; rh>=4.2; rh-=0.12){ const rowCap=Math.floor(availH/rh); if(rowCap<3) continue;
+    let cols=0; const per=discs.map(d=>{const c=Math.max(1,Math.ceil(d.n/rowCap)); cols+=c; return {nome:d.nome,n:d.n,cols:c,rows:Math.ceil(d.n/c)};});
+    if(cols<=maxCols){ best={per,totalCols:cols}; break; } }
+  if(!best){ const rowCap=Math.floor(availH/4.2); let cols=0; const per=discs.map(d=>{const c=Math.max(1,Math.ceil(d.n/rowCap)); cols+=c; return {nome:d.nome,n:d.n,cols:c,rows:Math.ceil(d.n/c)};}); best={per,totalCols:cols}; }
+  const globalRows=Math.max.apply(null,best.per.map(d=>d.rows));
+  return {per:best.per, totalCols:best.totalCols, globalRows, rowH:availH/globalRows};
+}
+function fgDrawPanel(doc, cfg, panel, logo){
+  const nalt=cfg.nalt||5; const CH=CH_ALL.slice(0,nalt);
+  const GREEN=[15,110,86],MINT=[225,245,238],DK=[30,30,30],GRAY=[120,120,120],LINE=[70,70,70];
+  const px=panel.x, py=panel.y, PWd=panel.w, PHd=panel.h, pm=6;
+  let logoW=0, logoH=0;
+  if(logo&&logo.dataUrl){ logoH=11; logoW=logoH*(logo.ratio||1.4); if(logoW>26){logoW=26;logoH=logoW/(logo.ratio||1.4);} try{doc.addImage(logo.dataUrl,logo.fmt||"PNG",px+pm,py+pm,logoW,logoH);}catch(e){} }
+  else { logoW=20; logoH=11; doc.setDrawColor(...GRAY); doc.setLineWidth(0.3); doc.roundedRect(px+pm,py+pm,logoW,logoH,1.5,1.5,"S"); doc.setFontSize(7); doc.setTextColor(...GRAY); doc.text("LOGO",px+pm+logoW/2,py+pm+logoH/2,{align:"center",baseline:"middle"}); }
+  doc.setTextColor(...DK); doc.setFont("helvetica","bold"); doc.setFontSize(11);
+  const escola=(cfg.escola||"").trim()||"Nome da escola";
+  const eLines=doc.splitTextToSize(escola, PWd-2*pm-logoW-6); let ey=py+pm+3;
+  eLines.slice(0,2).forEach(ln=>{ doc.text(ln, px+PWd-pm, ey, {align:"right"}); ey+=5; });
+  if(cfg.titulo&&cfg.titulo.trim()){ doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...GREEN); doc.text(cfg.titulo.trim(), px+PWd-pm, ey, {align:"right"}); ey+=4; }
+  const campos=cfg.campos||{}; let fy=py+pm+Math.max(logoH,14)+4;
+  doc.setTextColor(...DK); doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
+  doc.text("Nome:", px+pm, fy); doc.setDrawColor(...LINE); doc.setLineWidth(0.2); doc.line(px+pm+13, fy+0.4, px+PWd-pm, fy+0.4); fy+=5.5;
+  const l2=[]; if(campos.turma)l2.push("Turma"); if(campos.data)l2.push("Data"); if(campos.inscricao)l2.push("Nº insc."); if(campos.professor)l2.push("Prof.");
+  if(l2.length){ const seg=(PWd-2*pm)/l2.length; l2.forEach((lb,i)=>{ const xx=px+pm+i*seg; doc.text(lb+":",xx,fy); const lw=doc.getTextWidth(lb+":"); doc.setDrawColor(...LINE); doc.setLineWidth(0.2); doc.line(xx+lw+1.5,fy+0.4,xx+seg-4,fy+0.4); }); fy+=5.5; }
+  const MSZ=5.5, AL=px+pm+2, AR=px+PWd-pm-2, T=fy+2, AB=py+PHd-pm-2;
+  const availW=AR-AL, availH=(AB-T)-8;
+  const discs=cfg.disciplinas.filter(d=>d.n>0);
+  const G=fgFitGrid(discs, availW, availH, nalt);
+  const gridTop=T+8, gridBot=AB, rowH=(gridBot-gridTop)/G.globalRows, colPitch=(AR-AL)/G.totalCols;
+  const bx0=9;
+  const step=Math.min(5.1, (colPitch-bx0-3)/nalt);
+  const radius=Math.min(1.7, step*0.34);
+  doc.setFillColor(0,0,0); [[AL,T],[AR,T],[AR,AB],[AL,AB]].forEach(m=>doc.rect(m[0]-MSZ/2,m[1]-MSZ/2,MSZ,MSZ,"F"));
+  let cc=0; G.per.forEach(dd=>{ const x0=AL+cc*colPitch, x1=AL+(cc+dd.cols)*colPitch; doc.setFillColor(...MINT); doc.roundedRect(x0+1.2,T+2,(x1-x0)-2.4,5.4,1,1,"F"); doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...GREEN); doc.text((dd.nome||"").toUpperCase(),x0+3.2,T+4.8,{baseline:"middle"}); cc+=dd.cols; });
+  const ansU=[], colDisc=[], cells=[]; let q=0, colCursor=0;
+  G.per.forEach((dd,di)=>{ for(let c=0;c<dd.cols;c++){ const colIndex=colCursor+c, colX=AL+colIndex*colPitch; colDisc[colIndex]=di; ansU[colIndex]=(colX+bx0-AL)/(AR-AL);
+      const inCol=Math.min(dd.rows, dd.n-c*dd.rows);
+      for(let r=0;r<inCol;r++){ q++; cells.push({q,col:colIndex,row:r}); const cy=gridTop+r*rowH+rowH/2;
+        doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...DK); doc.text(String(q).padStart(2,"0"),colX+2.5,cy,{baseline:"middle"});
+        for(let k=0;k<nalt;k++){ const ccx=colX+bx0+k*step; doc.setDrawColor(110,110,110); doc.setLineWidth(0.22); doc.circle(ccx,cy,radius,"S"); doc.setFontSize(6); doc.setTextColor(140,140,140); doc.text(CH[k],ccx,cy,{align:"center",baseline:"middle"}); } }
+    } colCursor+=dd.cols; });
+  return {tipo:"custom", nalt, total:q, ncol:G.totalCols, rows:G.globalRows, ansU, dU:step/(AR-AL), qV0:(gridTop+rowH/2-T)/(AB-T), qDV:rowH/(AB-T), colDisc, cells, discRanges:G.per.map(d=>({nome:d.nome,n:d.n})), box:{AL,AR,T,AB}};
+}
+function fgGerar(cfg,JsPDF,logo){
+  const doc=new JsPDF({unit:"mm",format:"a4"}); const PW=210, PH=297;
+  const copias = cfg.copias===1?1:2; let spec;
+  if(copias===2){ const halfH=PH/2;
+    spec=fgDrawPanel(doc, cfg, {x:0,y:0,w:PW,h:halfH}, logo);
+    fgDrawPanel(doc, cfg, {x:0,y:halfH,w:PW,h:halfH}, logo);
+    doc.setDrawColor(150,150,150); doc.setLineWidth(0.2); doc.setLineDashPattern([2,2],0); doc.line(6,halfH,PW-6,halfH); doc.setLineDashPattern([],0);
+    doc.setFontSize(6.5); doc.setTextColor(150,150,150); doc.text("corte aqui",PW/2,halfH-1,{align:"center"});
+  } else { spec=fgDrawPanel(doc, cfg, {x:0,y:0,w:PW,h:PH}, logo); }
+  return {doc, spec, warn:null};
+}
+function loadJsPDF(){ return new Promise((res,rej)=>{ if(window.jspdf&&window.jspdf.jsPDF) return res(window.jspdf.jsPDF);
+  const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+  s.onload=()=>res(window.jspdf&&window.jspdf.jsPDF); s.onerror=()=>rej(new Error("cdn")); document.head.appendChild(s); }); }
+let discRows=[{nome:"",n:10}], fgLogo=null;
+function totalDisc(){ return discRows.reduce((s,d)=>s+(parseInt(d.n)||0),0); }
+function renderDiscList(){ const c=$("#discList"); c.innerHTML="";
+  discRows.forEach((d,i)=>{ const row=document.createElement("div"); row.className="disc-row";
+    const nm=document.createElement("input"); nm.type="text"; nm.className="nome"; nm.placeholder="Disciplina "+(i+1); nm.value=d.nome; nm.oninput=()=>{d.nome=nm.value;};
+    const qt=document.createElement("input"); qt.type="number"; qt.className="qtd"; qt.min="1"; qt.value=d.n; qt.oninput=()=>{d.n=qt.value; $("#totalQ").textContent="Total: "+totalDisc()+" questões";};
+    const del=document.createElement("button"); del.className="del"; del.textContent="✕"; del.setAttribute("aria-label","Remover"); del.onclick=()=>{ discRows.splice(i,1); if(!discRows.length)discRows.push({nome:"",n:10}); renderDiscList(); };
+    row.appendChild(nm); row.appendChild(qt); row.appendChild(del); c.appendChild(row); });
+  $("#totalQ").textContent="Total: "+totalDisc()+" questões";
+}
+$("#fLogo").onchange=e=>{ const f=e.target.files[0]; if(!f){fgLogo=null;return;} const r=new FileReader();
+  r.onload=()=>{ const img=new Image(); img.onload=()=>{ fgLogo={dataUrl:r.result, ratio:img.width/img.height, fmt:(f.type.indexOf("png")>=0?"PNG":"JPEG")}; }; img.src=r.result; }; r.readAsDataURL(f); };
+$("#criarFolhaBtn").onclick=()=>{ if(!discRows.length) discRows=[{nome:"",n:10}]; renderDiscList(); $("#folhaOvl").classList.remove("hidden"); };
+$("#folhaClose").onclick=()=>$("#folhaOvl").classList.add("hidden");
+$("#folhaOvl").onclick=e=>{ if(e.target===$("#folhaOvl")) $("#folhaOvl").classList.add("hidden"); };
+$("#addDisc").onclick=()=>{ discRows.push({nome:"",n:10}); renderDiscList(); };
+async function entregarArquivo(bytes, filename, mime){
+  const file=new File([bytes],filename,{type:mime});
+  try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:filename}); return true; } }catch(e){ if(e&&e.name==="AbortError") return true; }
+  try{ if(window.claude&&window.claude.use){ const dl=await window.claude.use("downloads"); if(dl){ try{ await dl.save({filename,data:bytes}); return true; }catch(err){ if(err&&err.code==="declined") return true; } } } }catch(e){}
+  try{ const blob=new Blob([bytes],{type:mime}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1500); return true; }catch(e){}
+  return false;
+}
+$("#gerarPdfBtn").onclick=async()=>{
+  const discs=discRows.map(d=>({nome:(d.nome||"").trim()||"Disciplina", n:Math.max(0,parseInt(d.n)||0)})).filter(d=>d.n>0);
+  if(!discs.length){ toast("Adicione ao menos uma disciplina com questões."); return; }
+  const total=discs.reduce((s,d)=>s+d.n,0);
+  if(total>150){ toast("Por enquanto, máximo de ~150 questões por folha."); return; }
+  const cfg={ escola:$("#fEscola").value, titulo:$("#fTitulo").value, nalt:+$("#fAlt").value, copias:+$("#fCopias").value,
+    campos:{turma:$("#cTurma").checked,data:$("#cData").checked,inscricao:$("#cInsc").checked,professor:$("#cProf").checked}, disciplinas:discs };
+  const btn=$("#gerarPdfBtn"); btn.textContent="Gerando…";
+  let JsPDF=null; try{ JsPDF=await loadJsPDF(); }catch(e){}
+  if(!JsPDF){ btn.textContent="Gerar PDF"; toast("Precisa de internet na primeira vez para gerar o PDF."); return; }
+  try{
+    const {doc,spec,warn}=fgGerar(cfg,JsPDF,fgLogo); if(warn) toast(warn);
+    try{ setCustomSpec(spec); store.custom.escola=cfg.escola; store.custom.titulo=cfg.titulo; saveCustom(); refreshModeloOptions(); }catch(e){}
+    const bytes=new Uint8Array(doc.output("arraybuffer"));
+    const filename=("folha-"+(cfg.titulo||cfg.escola||"simulado")).replace(/[^0-9A-Za-zÀ-ÿ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase()+".pdf";
+    const ok=await entregarArquivo(bytes, filename, "application/pdf");
+    if(ok){ $("#folhaOvl").classList.add("hidden"); toast("Folha em PDF gerada! Para corrigir, escolha 'Personalizado' no topo e monte o gabarito."); }
+    else toast("Não consegui entregar o arquivo aqui — tente pelo Chrome ou Safari.");
+  }catch(e){ toast("Erro ao gerar o PDF."); }
+  btn.textContent="Gerar PDF";
+};
 
 /* ================= INIT ================= */
 /* pede ao navegador para não descartar os dados; avisa se aberto dentro de outro app */
@@ -1540,12 +1947,21 @@ $("#modeloSel").onchange=()=>{ setModelo($("#modeloSel").value); onModeloChange(
   }
   const ok=$("#storageBannerOk"); if(ok) ok.onclick=()=>{ $("#storageBanner").classList.add("hidden"); try{localStorage.setItem("omr_bannerOff","1");}catch(e){} };
 })();
+if(MODELO==="custom" && !customReady()) MODELO="m1";
+refreshModeloOptions();
 $("#modeloSel").value=MODELO;
 updateGabaritoHead();
 reconcileDone();
 buildKeyUI(); updateKeyStatus(); updateResCount();
 fillTurmaPicker();
 $("#keyWarn").classList.toggle("hidden",mKeyComplete());
+
+/* tutorial de primeiro uso */
+$("#tutOk").onclick=()=>{ $("#tutorial").classList.add("hidden"); try{localStorage.setItem("omr_onboarded","1");}catch(e){} };
+(function firstRun(){
+  let seen=true; try{ seen=localStorage.getItem("omr_onboarded"); }catch(e){}
+  if(!seen) setTimeout(()=>$("#tutorial").classList.remove("hidden"), 950);
+})();
 
 if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); }); }
 </script>
