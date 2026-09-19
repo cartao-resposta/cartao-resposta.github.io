@@ -204,6 +204,303 @@ tr.me td{font-weight:700}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.001s!important}}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style id="sim-css">
+.sim-scope{
+  --bg:#e7ebf1;
+  --panel:#ffffff;
+  --panel-2:#f5f7fa;
+  --text:#17233b;
+  --muted:#5c6b82;
+  --line:#d4dbe6;
+  --line-soft:#e6ebf2;
+  --accent:#136a72;
+  --accent-hover:#0e535a;
+  --accent-soft:#e0f0f0;
+  --navy:#16233a;
+  --danger:#a8322b;
+  --warn:#8a5a12;
+  --warn-soft:#fbf0d8;
+  --sheet-bg:#ffffff;
+  --sheet-ink:#131a26;
+  --sheet-muted:#4a5567;
+  --sheet-line:#c9cfd9;
+  --radius:10px;
+  --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+}
+@media (prefers-color-scheme: dark){}
+.sim-scope *{box-sizing:border-box}
+.sim-scope, .sim-scope{margin:0;padding:0}
+.sim-scope{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.sim-scope button{font-family:inherit}
+.sim-scope ::selection{background:var(--accent-soft)}
+.sim-scope .appbar{
+  background:var(--navy);
+  color:#eef3f8;
+  display:flex;align-items:center;gap:16px;
+  padding:12px 20px;
+  position:sticky;top:0;z-index:40;
+  box-shadow:0 1px 0 rgba(0,0,0,.15);
+}
+.sim-scope .brand{display:flex;flex-direction:column;line-height:1.15;margin-right:auto}
+.sim-scope .brand b{font-family:var(--serif);font-weight:700;font-size:19px;letter-spacing:.1px}
+.sim-scope .brand span{font-size:12px;color:#9fb2c6}
+.sim-scope .appbar .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sim-scope .btn{
+  border:1px solid transparent;border-radius:8px;
+  padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;
+  transition:background .12s ease,border-color .12s ease,color .12s ease;
+  color:var(--text);background:var(--panel-2);border-color:var(--line);
+}
+.sim-scope .btn:hover{background:var(--panel)}
+.sim-scope .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sim-scope .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sim-scope .btn-primary:hover{background:var(--accent-hover)}
+.sim-scope .btn-ghost-light{background:rgba(255,255,255,.08);color:#eef3f8;border-color:rgba(255,255,255,.18)}
+.sim-scope .btn-ghost-light:hover{background:rgba(255,255,255,.16)}
+.sim-scope .btn-sm{padding:5px 9px;font-size:12.5px;font-weight:600}
+.sim-scope .btn svg{width:16px;height:16px;flex:none}
+.sim-scope .btn-icon{padding:5px;width:30px;height:30px;justify-content:center}
+.sim-scope .workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;align-items:start}
+.sim-scope .pane{min-height:calc(100vh - 57px)}
+.sim-scope .pane-editor{border-right:1px solid var(--line);padding:20px 20px 120px}
+.sim-scope .pane-preview{padding:24px 20px 120px;background:var(--panel-2)}
+.sim-scope .pane-scroll{position:sticky;top:57px}
+.sim-scope .mobile-tabs{display:none}
+.sim-scope .card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  margin-bottom:16px;overflow:hidden;
+}
+.sim-scope .card-head{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border-bottom:1px solid var(--line-soft);background:var(--panel-2);
+}
+.sim-scope .card-head h2{margin:0;font-size:14px;font-weight:700;letter-spacing:.2px}
+.sim-scope .card-body{padding:14px}
+.sim-scope .field{margin-bottom:12px}
+.sim-scope .field:last-child{margin-bottom:0}
+.sim-scope .field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.sim-scope .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sim-scope input[type=text], .sim-scope textarea{
+  width:100%;border:1px solid var(--line);border-radius:8px;background:var(--panel);
+  color:var(--text);font-family:var(--sans);font-size:14px;padding:9px 11px;resize:vertical;
+}
+.sim-scope input[type=text]:focus, .sim-scope textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.sim-scope textarea{min-height:60px;line-height:1.45}
+.sim-scope .section{margin-bottom:22px}
+.sim-scope .section-head{
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+}
+.sim-scope .section-head .disc-name{
+  border:none;background:transparent;font-family:var(--serif);font-weight:700;font-size:18px;
+  color:var(--text);padding:2px 4px;border-radius:6px;flex:1;min-width:0;
+}
+.sim-scope .section-head .disc-name:hover{background:var(--panel-2)}
+.sim-scope .section-head .disc-name:focus{outline:none;background:var(--panel-2);box-shadow:0 0 0 3px var(--accent-soft)}
+.sim-scope .section-count{font-size:12px;color:var(--muted);white-space:nowrap;background:var(--panel-2);border:1px solid var(--line-soft);padding:2px 8px;border-radius:20px}
+.sim-scope .q-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px}
+.sim-scope .q-head{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line-soft);
+  background:var(--panel-2);border-radius:var(--radius) var(--radius) 0 0;
+}
+.sim-scope .q-num{font-weight:700;font-size:13px;color:var(--accent);letter-spacing:.3px}
+.sim-scope .q-head .spacer{margin-left:auto}
+.sim-scope .q-body{padding:12px}
+.sim-scope .paste-box{
+  border:1px dashed var(--line);border-radius:8px;background:var(--panel-2);
+  padding:10px;margin-bottom:12px;
+}
+.sim-scope .paste-box textarea{background:var(--panel);min-height:48px;font-size:13px}
+.sim-scope .paste-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.sim-scope .paste-hint{font-size:11.5px;color:var(--muted)}
+.sim-scope .alts{display:flex;flex-direction:column;gap:7px}
+.sim-scope .alt-row{display:flex;align-items:center;gap:8px}
+.sim-scope .alt-key{
+  width:26px;height:26px;flex:none;border-radius:6px;background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+}
+.sim-scope .alt-row input{padding:7px 10px}
+.sim-scope .img-zone{
+  margin-top:12px;border:1px dashed var(--line);border-radius:8px;padding:10px;
+  display:flex;align-items:center;gap:12px;background:var(--panel-2);cursor:pointer;
+  transition:border-color .12s,background .12s;
+}
+.sim-scope .img-zone.active, .sim-scope .img-zone.drag{border-color:var(--accent);background:var(--accent-soft)}
+.sim-scope .img-zone .ico{color:var(--muted);display:flex}
+.sim-scope .img-zone .txt{font-size:12.5px;color:var(--muted);line-height:1.35}
+.sim-scope .img-zone .txt b{color:var(--text);font-weight:600}
+.sim-scope .img-thumb{display:flex;align-items:center;gap:10px;margin-top:12px;padding:8px;border:1px solid var(--line-soft);border-radius:8px;background:var(--panel)}
+.sim-scope .img-thumb img{max-height:56px;max-width:120px;border-radius:4px;border:1px solid var(--sheet-line)}
+.sim-scope .img-thumb .nm{font-size:12px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sim-scope .add-q{
+  width:100%;border:1px dashed var(--line);background:var(--panel);color:var(--accent);
+  border-radius:8px;padding:10px;font-weight:600;font-size:13.5px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.sim-scope .add-q:hover{background:var(--accent-soft);border-color:var(--accent)}
+.sim-scope .add-section{margin-top:6px}
+.sim-scope .notice{
+  background:var(--warn-soft);border:1px solid #e6cf95;color:var(--warn);
+  border-radius:8px;padding:9px 12px;font-size:12.5px;margin-bottom:14px;display:none;
+}
+.sim-scope .preview-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--muted);font-size:12.5px}
+.sim-scope .preview-toolbar .dot{width:5px;height:5px;border-radius:50%;background:var(--muted)}
+.sim-scope .sheet-wrap{display:flex;flex-direction:column;align-items:center;gap:24px}
+.sim-scope .sheet{
+  background:var(--sheet-bg);color:var(--sheet-ink);
+  width:100%;max-width:820px;
+  padding:34px 40px 46px;
+  border:1px solid var(--sheet-line);border-radius:4px;
+  box-shadow:0 6px 24px rgba(20,35,60,.10);
+  font-family:var(--serif);
+}
+.sim-scope .sheet-head{border-bottom:2px solid var(--sheet-ink);padding-bottom:12px;margin-bottom:6px}
+.sim-scope .sheet-head .escola{font-size:15px;font-weight:700;letter-spacing:.2px}
+.sim-scope .sheet-head .titulo{font-size:20px;font-weight:700;margin-top:2px}
+.sim-scope .sheet-head .meta{font-family:var(--sans);font-size:11.5px;color:var(--sheet-muted);margin-top:6px}
+.sim-scope .sheet-ident{
+  display:flex;gap:18px;flex-wrap:wrap;font-family:var(--sans);font-size:12px;color:var(--sheet-muted);
+  padding:9px 0 4px;border-bottom:1px solid var(--sheet-line);margin-bottom:8px;
+}
+.sim-scope .sheet-ident .fld{flex:1;min-width:120px}
+.sim-scope .sheet-ident .fld .ln{border-bottom:1px solid var(--sheet-line);height:16px;margin-top:2px}
+.sim-scope .sheet-instr{font-family:var(--sans);font-size:11.5px;color:var(--sheet-muted);font-style:italic;margin-bottom:12px;line-height:1.4}
+.sim-scope .columns{column-count:2;column-gap:26px;column-rule:1px solid var(--sheet-line)}
+.sim-scope .disc-header{
+  break-inside:avoid;break-after:avoid;
+  font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.4px;
+  color:var(--sheet-ink);text-transform:uppercase;
+  border-bottom:1px solid var(--sheet-ink);padding-bottom:3px;margin:2px 0 10px;
+}
+.sim-scope .disc-header.notfirst{margin-top:14px}
+.sim-scope .q{break-inside:avoid;margin-bottom:14px}
+.sim-scope .q .en{font-size:13.5px;line-height:1.42}
+.sim-scope .q .en .qn{font-weight:700}
+.sim-scope .q .en-p{margin:0;text-align:justify}
+.sim-scope .q .en-p+.en-p{margin-top:6px}
+.sim-scope .q .en-gap{height:7px}
+.sim-scope .q .en-item{display:flex;gap:5px;margin-top:3px}
+.sim-scope .q .en-item .en-mk{flex:0 0 26px}
+.sim-scope .q .en-item .en-tx{flex:1;text-align:justify}
+.sim-scope .q .qimg{margin:8px 0;text-align:center}
+.sim-scope .q .qimg img{width:100%;height:auto;border:1px solid var(--sheet-line)}
+.sim-scope .q .alt-group{margin-top:14px}
+.sim-scope .q .alt{font-size:13px;line-height:1.4;padding-left:20px;text-indent:-20px;margin-top:3px;text-align:justify}
+.sim-scope .q .alt-group>.alt:first-child{margin-top:0}
+.sim-scope .q .alt .lk{font-weight:700;margin-right:4px}
+.sim-scope .q-empty{color:var(--sheet-muted);font-style:italic;font-family:var(--sans);font-size:12px}
+.sim-scope .empty-state{
+  text-align:center;color:var(--muted);padding:50px 20px;font-size:14px;
+  font-family:var(--sans);
+}
+.sim-scope .empty-state svg{width:34px;height:34px;opacity:.5;margin-bottom:10px}
+.sim-scope .foot-note{font-family:var(--sans);font-size:11px;color:var(--muted);text-align:center;margin-top:16px}
+.sim-scope .toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);
+  background:var(--navy);color:#eef3f8;font-family:var(--sans);font-size:13.5px;font-weight:500;
+  padding:11px 18px;border-radius:10px;box-shadow:0 8px 26px rgba(10,18,32,.28);
+  opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;z-index:100;max-width:88vw;text-align:center;
+}
+.sim-scope .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media print{.sim-scope .toast{display:none !important}}
+.sim-scope .modal-back{position:fixed;inset:0;background:rgba(10,18,32,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.sim-scope .modal-back.show{display:flex}
+.sim-scope .modal{background:var(--panel);color:var(--text);border-radius:14px;max-width:380px;width:100%;padding:22px;box-shadow:0 18px 50px rgba(10,18,32,.35);border:1px solid var(--line)}
+.sim-scope .modal h3{margin:0 0 8px;font-size:17px;font-family:var(--serif)}
+.sim-scope .modal p{margin:0 0 18px;font-size:14px;color:var(--muted);line-height:1.5}
+.sim-scope .modal .row{display:flex;gap:10px;justify-content:flex-end}
+.sim-scope .modal .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.sim-scope .modal .btn-danger:hover{filter:brightness(1.08)}
+@media print{.sim-scope .modal-back{display:none !important}}
+.sim-scope .cover-sheet{font-family:var(--serif)}
+.sim-scope .cov-logos{display:flex;align-items:center;gap:14px;min-height:82px;margin-bottom:18px}
+.sim-scope .cov-logos .lg{flex:1;display:flex;align-items:center;justify-content:center}
+.sim-scope .cov-logos .lg img{max-height:82px;max-width:100%;object-fit:contain}
+.sim-scope .cov-logos .lbl{flex:1;text-align:center;font-family:var(--sans);font-size:8.5px;font-weight:600;color:var(--sheet-muted);line-height:1.25;letter-spacing:.2px}
+.sim-scope .cov-ident{border:1px solid var(--sheet-ink);font-family:var(--sans);font-size:12px;color:var(--sheet-ink);margin-bottom:18px}
+.sim-scope .cov-ident .t{text-align:center;font-weight:600;padding:4px;border-bottom:1px solid var(--sheet-ink)}
+.sim-scope .cov-ident .r{display:flex;border-bottom:1px solid var(--sheet-ink)}
+.sim-scope .cov-ident .r:last-child{border-bottom:none}
+.sim-scope .cov-ident .c{padding:6px 8px;flex:1;border-right:1px solid var(--sheet-ink)}
+.sim-scope .cov-ident .c:last-child{border-right:none}
+.sim-scope .cov-title{text-align:center;font-family:var(--sans);font-weight:700;font-size:16px;letter-spacing:.6px;margin:4px 0 20px}
+.sim-scope .cov-leia{text-align:center;font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.4px;margin-bottom:12px}
+.sim-scope .cov-instr{border:1px solid var(--sheet-ink);padding:12px 15px;font-family:var(--sans);font-size:11px;color:var(--sheet-ink)}
+.sim-scope .cov-instr ol{margin:0;padding-left:20px}
+.sim-scope .cov-instr li{margin-bottom:6px;text-align:justify;line-height:1.5}
+.sim-scope .cov-attn{text-align:center;font-family:var(--sans);font-weight:700;font-size:11.5px;line-height:1.45;margin:22px 22px 12px}
+.sim-scope .cov-phrase{border:1px solid var(--sheet-ink);min-height:72px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--serif);font-size:22px;padding:14px 18px;color:var(--sheet-ink)}
+.sim-scope .card-head .switch{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
+.sim-scope .card-head .switch input{width:15px;height:15px;accent-color:var(--accent)}
+.sim-scope select{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font-family:var(--sans);font-size:14px;padding:9px 11px}
+.sim-scope select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.sim-scope .chk{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer}
+.sim-scope .chk input{width:15px;height:15px;accent-color:var(--accent)}
+.sim-scope .phrase-row{display:flex;gap:8px}
+.sim-scope .phrase-row input{flex:1}
+.sim-scope .cov-note{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:8px;padding:9px 11px;font-size:11.5px;color:var(--muted);line-height:1.45}
+.sim-scope .cov-note b{color:var(--text);font-weight:600}
+.sim-scope .logo-strip{display:flex;flex-wrap:wrap;gap:8px}
+.sim-scope .logo-tile{position:relative;width:74px;height:52px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sim-scope .logo-tile img{max-width:100%;max-height:100%;object-fit:contain}
+.sim-scope .logo-tile .rm{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:2px solid var(--panel);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sim-scope .logo-add{width:74px;height:52px;border:1px dashed var(--line);border-radius:8px;background:var(--panel);color:var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px}
+.sim-scope .logo-add:hover{background:var(--accent-soft);border-color:var(--accent)}
+.sim-scope .cover-off{opacity:.5;pointer-events:none}
+@media (max-width: 900px){.sim-scope .workspace{grid-template-columns:1fr}
+.sim-scope .pane-editor{border-right:none}
+.sim-scope .pane-preview{border-top:1px solid var(--line)}
+.sim-scope .pane-scroll{position:static}
+.sim-scope .mobile-tabs{
+    display:flex;position:sticky;top:57px;z-index:30;background:var(--panel);
+    border-bottom:1px solid var(--line);
+  }
+.sim-scope .mobile-tabs button{
+    flex:1;border:none;background:transparent;padding:11px;font-weight:600;font-size:13.5px;
+    color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+  }
+.sim-scope .mobile-tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.sim-scope.show-preview .pane-editor{display:none}
+.sim-scope:not(.show-preview) .pane-preview{display:none}
+.sim-scope .sheet{padding:24px 22px 32px}}
+@media print{@page{size:A4;margin:14mm 12mm}
+.sim-scope{background:#fff}
+.sim-scope .appbar, .sim-scope .mobile-tabs, .sim-scope .pane-editor, .sim-scope .preview-toolbar, .sim-scope .foot-note, .sim-scope .notice{display:none !important}
+.sim-scope .workspace{display:block}
+.sim-scope .pane-preview{padding:0;background:#fff}
+.sim-scope .pane-scroll{position:static}
+.sim-scope .sheet-wrap{display:block}
+.sim-scope .sheet{max-width:none;width:auto;border:none;box-shadow:none;padding:0;border-radius:0}
+.sim-scope .columns{column-gap:20px}
+.sim-scope .q .qimg img{max-height:200px}
+.sim-scope .cover-sheet{break-after:page;page-break-after:always}}
+
+/* ---- integracao Criar Simulado (mapeia p/ tema do Leitor + coluna unica) ---- */
+.sim-scope{ --bg:transparent; --panel:var(--surface); --panel-2:var(--surface2);
+  --text:var(--ink); --line-soft:var(--line); --accent:var(--primary); --accent-hover:var(--primary);
+  --accent-soft:var(--primary-soft); --danger:var(--bad); --navy:var(--ink); --radius:12px;
+  color:var(--ink); }
+.sim-scope .appbar{position:static;background:transparent;border:0;box-shadow:none;padding:6px 0 0;min-height:0;height:auto}
+.sim-scope .appbar .actions{justify-content:flex-end;width:100%;flex-wrap:wrap}
+.sim-scope .workspace{grid-template-columns:1fr !important;min-height:0}
+.sim-scope .pane{min-height:0 !important}
+.sim-scope .pane-editor{border-right:none;padding:14px 0 60px}
+.sim-scope .pane-preview{padding:14px 0 60px;background:transparent;border-top:1px solid var(--line);display:none}
+.sim-scope .pane-scroll{position:static}
+.sim-scope .mobile-tabs{display:flex !important;position:static;top:auto;background:transparent;border-bottom:1px solid var(--line);margin-bottom:6px}
+.sim-scope.show-preview .pane-editor{display:none}
+.sim-scope.show-preview .pane-preview{display:block}
+
+</style>
 </head>
 <body>
 <header><div class="wrap hbar">
@@ -218,6 +515,8 @@ tr.me td{font-weight:700}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Corrigir</button>
     <button class="tab" id="tab-gabarito" role="tab" aria-selected="false" aria-controls="sec-gabarito">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Gabarito</button>
+    <button class="tab" id="tab-simulado" role="tab" aria-selected="false" aria-controls="sec-simulado">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Criar Simulado</button>
     <button class="tab" id="tab-resultados" role="tab" aria-selected="false" aria-controls="sec-resultados">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>Notas<span class="badge hidden" id="resCount">0</span></button>
     <button class="tab" id="tab-turmas" role="tab" aria-selected="false" aria-controls="sec-turmas">
@@ -327,6 +626,178 @@ tr.me td{font-weight:700}
   </section>
 
   <!-- ============ RESULTADOS ============ -->
+  <section id="sec-simulado" class="sim-scope" role="tabpanel" aria-labelledby="tab-simulado">
+
+<header class="appbar">
+  
+  <div class="actions">
+    
+    <button class="btn btn-ghost-light btn-sm" id="btnClear">Limpar tudo</button>
+    <button class="btn btn-ghost-light btn-sm" id="btnPrint" title="Imprimir em papel ou salvar pela caixa do navegador">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6h-2"/><rect x="6" y="14" width="12" height="7"/></svg>
+      Imprimir
+    </button>
+    <button class="btn btn-primary" id="btnDownload">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      Criar simulado + folha
+    </button>
+  </div>
+</header>
+
+<div class="mobile-tabs">
+  <button id="tabEdit" class="on">Editar</button>
+  <button id="tabPreview">Visualizar folha</button>
+</div>
+
+<div class="workspace">
+  <!-- ============ EDITOR ============ -->
+  <div class="pane pane-editor">
+    <div class="notice" id="notice"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>
+        <h2>Cabeçalho da prova</h2>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label for="h-escola">Escola</label>
+          <input type="text" id="h-escola" data-h="escola" placeholder="Nome da escola">
+        </div>
+        <div class="field">
+          <label for="h-titulo">Título do simulado</label>
+          <input type="text" id="h-titulo" data-h="titulo" placeholder="Ex.: Simulado de Ciências Humanas — 1º bimestre">
+        </div>
+        <div class="field">
+          <label for="h-periodo">Período</label>
+          <select id="h-periodo" data-h="periodo">
+            <option value="">— selecione —</option>
+            <option>1º Período</option>
+            <option>2º Período</option>
+            <option>3º Período</option>
+            <option>4º Período</option>
+          </select>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="h-serie">Série / turma</label>
+            <input type="text" id="h-serie" data-h="serie" placeholder="Ex.: 3ª série — Ensino Médio">
+          </div>
+          <div class="field">
+            <label for="h-data">Data</label>
+            <input type="text" id="h-data" data-h="data" placeholder="Ex.: ___/___/______">
+          </div>
+        </div>
+        <div class="field">
+          <label for="h-instr">Observação no topo das folhas de questões (opcional)</label>
+          <textarea id="h-instr" data-h="instr" placeholder="Aparece só nas páginas de questões. As instruções completas ficam na capa."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M9 21v-6h6v6"/></svg>
+        <h2>Capa do simulado</h2>
+        <label class="switch" for="cover-enabled"><input type="checkbox" id="cover-enabled"> Incluir capa</label>
+      </div>
+      <div class="card-body" id="cover-body">
+        <div class="field">
+          <label for="cover-area">Área do conhecimento — vira o título da capa</label>
+          <select id="cover-area">
+            <option>Ciências Humanas</option>
+            <option>Ciências da Natureza</option>
+            <option>Linguagens e suas Tecnologias</option>
+            <option>Matemática e suas Tecnologias</option>
+            <option value="__custom__">Título personalizado…</option>
+          </select>
+        </div>
+        <div class="field" id="cover-area-custom-wrap" style="display:none">
+          <label for="cover-area-custom">Título personalizado</label>
+          <input type="text" id="cover-area-custom" placeholder="Ex.: Simulado Interdisciplinar">
+        </div>
+        <div class="field">
+          <label>Logos do topo (envie as imagens oficiais)</label>
+          <div id="cover-logos" class="logo-strip"></div>
+          <input type="file" id="cover-logo-file" accept="image/*" multiple style="display:none">
+        </div>
+        <div class="field">
+          <label for="cover-duration">Duração informada nas instruções</label>
+          <input type="text" id="cover-duration" placeholder="Ex.: quatro horas">
+        </div>
+        <div class="field">
+          <div class="cov-note" id="cover-composition"></div>
+        </div>
+        <div class="field">
+          <label class="chk" for="cover-transc-on"><input type="checkbox" id="cover-transc-on"> Incluir frase para transcrição no cartão-resposta</label>
+        </div>
+        <div class="field" id="cover-transc-wrap">
+          <label for="cover-transc">Frase da transcrição</label>
+          <div class="phrase-row">
+            <input type="text" id="cover-transc" placeholder="Frase que o aluno copia no cartão-resposta">
+            <button class="btn btn-sm" id="cover-newphrase" type="button">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+              Nova frase
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sections"></div>
+
+    <button class="btn add-q add-section" id="btnAddSection">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      Adicionar disciplina
+    </button>
+    <div class="card" id="sim-share-card">
+      <div class="card-head">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+        <h2>Compartilhar com outros professores</h2>
+      </div>
+      <div class="card-body">
+        <p style="margin:0 0 10px;color:var(--muted);font-size:13px;line-height:1.5">Gera um código com a folha de resposta e o gabarito deste simulado. O colega cola o código no app dele e já corrige no próprio celular, com as turmas dele. As logos e os seus alunos não vão no código. Gere o código <b>depois</b> de preencher o gabarito.</p>
+        <button class="btn" id="simShareGen" type="button" style="background:var(--accent);color:#fff;border-color:var(--accent)">Compartilhar simulado (código)</button>
+        <textarea id="simShareOut" readonly placeholder="O código aparece aqui" style="display:none;margin-top:10px;width:100%;min-height:70px"></textarea>
+        <button class="btn" id="simShareCopy" type="button" style="display:none;margin-top:8px">Copiar código</button>
+        <div style="height:1px;background:var(--line);margin:14px 0"></div>
+        <div class="field"><label for="simImpIn">Importar simulado recebido</label>
+          <textarea id="simImpIn" placeholder="Cole aqui o código que o outro professor enviou" style="min-height:70px"></textarea></div>
+        <button class="btn" id="simImpDo" type="button" style="margin-top:8px">Importar simulado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PREVIEW ============ -->
+  <div class="pane pane-preview">
+    <div class="pane-scroll">
+      <div class="preview-toolbar">
+        <span>Pré-visualização</span><span class="dot"></span>
+        <span id="totalCount">0 questões</span><span class="dot"></span>
+        <span>é assim que a folha será impressa</span>
+      </div>
+      <div class="sheet-wrap" id="sheetWrap"></div>
+      <div class="foot-note">Salvo automaticamente neste navegador. Use “Criar simulado + folha” para gerar o arquivo final, ou “Imprimir” para enviar à impressora.</div>
+    </div>
+  </div>
+</div>
+
+<div id="sim-toast-unused" class="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modalTitle">Confirmar</h3>
+    <p id="modalMsg"></p>
+    <div class="row">
+      <button class="btn" id="modalCancel">Cancelar</button>
+      <button class="btn btn-danger" id="modalOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+
+  </section>
+
   <section id="sec-resultados" role="tabpanel" aria-labelledby="tab-resultados">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
@@ -442,6 +913,7 @@ tr.me td{font-weight:700}
     <div class="frow"><label>Disciplinas e número de questões</label>
       <div id="discList"></div>
       <button class="btn" id="addDisc" style="padding:7px 11px;font-size:13px">+ Adicionar disciplina</button>
+
       <div class="sub" id="totalQ" style="margin-top:8px">Total: 0 questões</div>
     </div>
     <button class="btn primary" id="gerarPdfBtn" style="width:100%;margin-top:8px">Gerar PDF</button>
@@ -680,7 +1152,7 @@ matchMedia("(prefers-color-scheme:dark)").addEventListener?.("change",applyTheme
 applyTheme();
 
 /* ================= NAVEGAÇÃO ================= */
-const tabs=["corrigir","gabarito","resultados","turmas"];
+const tabs=["corrigir","gabarito","simulado","resultados","turmas"];
 tabs.forEach(t=>{ $("#tab-"+t).onclick=()=>selectTab(t); });
 function selectTab(t){
   tabs.forEach(x=>{
@@ -1817,7 +2289,7 @@ function updateGabaritoHead(){
     s.textContent="Nomeie as quatro disciplinas e marque a alternativa correta de cada questão. Fica salvo no aparelho.";
   }
 }
-function refreshModeloOptions(){ const o=$("#optCustom"); if(o) o.hidden=!customReady(); }
+function refreshModeloOptions(){ const o=$("#optCustom"); if(o){ o.hidden=!customReady(); o.textContent=(store.custom&&store.custom.titulo&&String(store.custom.titulo).trim())?String(store.custom.titulo).trim():"Personalizado (folha criada por você)"; } }
 function onModeloChange(){
   $("#modeloSel").value=MODELO;
   buildKeyUI(); updateKeyStatus(); updateResCount(); updateGabaritoHead();
@@ -1848,6 +2320,27 @@ function fgDrawPanel(doc, cfg, panel, logo){
   const nalt=cfg.nalt||5; const CH=CH_ALL.slice(0,nalt);
   const GREEN=[15,110,86],MINT=[225,245,238],DK=[30,30,30],GRAY=[120,120,120],LINE=[70,70,70];
   const px=panel.x, py=panel.y, PWd=panel.w, PHd=panel.h, pm=6;
+  let fy;
+  if(cfg.headerFull){
+    const logos=(cfg.logos&&cfg.logos.length)?cfg.logos:(logo&&logo.dataUrl?[logo]:[]);
+    let ly=py+pm+1; const LH=21;
+    const items=logos.map(l=>{ const r=(l.ratio||1.4); let w=LH*r; if(w>52)w=52; return {l,w,h:w/r}; });
+    const gap=6; const totalW=items.reduce((s,it)=>s+it.w,0)+gap*Math.max(0,items.length-1);
+    let lx=px+(PWd-totalW)/2, maxH=0;
+    items.forEach(it=>{ try{doc.addImage(it.l.dataUrl,it.l.fmt||"PNG",lx,ly,it.w,it.h);}catch(e){} lx+=it.w+gap; if(it.h>maxH)maxH=it.h; });
+    let ty=ly+LH+4;/*altura fixa p/ planta bater com/sem logos*/
+    const tblX=px+pm, tblW=PWd-2*pm, rH=5.8;
+    doc.setDrawColor(...DK); doc.setLineWidth(0.3); doc.setTextColor(...DK); doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
+    doc.rect(tblX,ty,tblW,rH); doc.text("Dados de Identificação", tblX+tblW/2, ty+rH-2, {align:"center"}); ty+=rH;
+    doc.rect(tblX,ty,tblW,rH); doc.text("Aluno(a):", tblX+2, ty+rH-2); ty+=rH;
+    doc.rect(tblX,ty,tblW,rH); const c2=tblX+tblW*0.44, c3=tblX+tblW*0.72; doc.line(c2,ty,c2,ty+rH); doc.line(c3,ty,c3,ty+rH);
+    doc.text("Série: "+((cfg.serie||"").trim()), tblX+2, ty+rH-2);
+    doc.text("Turma:", c2+2, ty+rH-2);
+    doc.text("Data: ___/___/______", c3+2, ty+rH-2); ty+=rH;
+    ty+=5; doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...DK);
+    doc.text(((cfg.titulo||"").trim()||"SIMULADO").toUpperCase(), px+PWd/2, ty, {align:"center"});
+    fy=ty+3;
+  } else {
   let logoW=0, logoH=0;
   if(logo&&logo.dataUrl){ logoH=11; logoW=logoH*(logo.ratio||1.4); if(logoW>26){logoW=26;logoH=logoW/(logo.ratio||1.4);} try{doc.addImage(logo.dataUrl,logo.fmt||"PNG",px+pm,py+pm,logoW,logoH);}catch(e){} }
   else { logoW=20; logoH=11; doc.setDrawColor(...GRAY); doc.setLineWidth(0.3); doc.roundedRect(px+pm,py+pm,logoW,logoH,1.5,1.5,"S"); doc.setFontSize(7); doc.setTextColor(...GRAY); doc.text("LOGO",px+pm+logoW/2,py+pm+logoH/2,{align:"center",baseline:"middle"}); }
@@ -1856,11 +2349,12 @@ function fgDrawPanel(doc, cfg, panel, logo){
   const eLines=doc.splitTextToSize(escola, PWd-2*pm-logoW-6); let ey=py+pm+3;
   eLines.slice(0,2).forEach(ln=>{ doc.text(ln, px+PWd-pm, ey, {align:"right"}); ey+=5; });
   if(cfg.titulo&&cfg.titulo.trim()){ doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...GREEN); doc.text(cfg.titulo.trim(), px+PWd-pm, ey, {align:"right"}); ey+=4; }
-  const campos=cfg.campos||{}; let fy=py+pm+Math.max(logoH,14)+4;
+  const campos=cfg.campos||{}; fy=py+pm+Math.max(logoH,14)+4;
   doc.setTextColor(...DK); doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
   doc.text("Nome:", px+pm, fy); doc.setDrawColor(...LINE); doc.setLineWidth(0.2); doc.line(px+pm+13, fy+0.4, px+PWd-pm, fy+0.4); fy+=5.5;
   const l2=[]; if(campos.turma)l2.push("Turma"); if(campos.data)l2.push("Data"); if(campos.inscricao)l2.push("Nº insc."); if(campos.professor)l2.push("Prof.");
   if(l2.length){ const seg=(PWd-2*pm)/l2.length; l2.forEach((lb,i)=>{ const xx=px+pm+i*seg; doc.text(lb+":",xx,fy); const lw=doc.getTextWidth(lb+":"); doc.setDrawColor(...LINE); doc.setLineWidth(0.2); doc.line(xx+lw+1.5,fy+0.4,xx+seg-4,fy+0.4); }); fy+=5.5; }
+  }
   const MSZ=5.5, AL=px+pm+2, AR=px+PWd-pm-2, T=fy+2, AB=py+PHd-pm-2;
   const availW=AR-AL, availH=(AB-T)-8;
   const discs=cfg.disciplinas.filter(d=>d.n>0);
@@ -2257,6 +2751,918 @@ $("#tutOk").onclick=()=>{ $("#tutorial").classList.add("hidden"); try{localStora
 })();
 
 if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); }); }
+</script>
+<script>
+(function(){
+  "use strict";
+  const SIMROOT=document.getElementById('sec-simulado')||document.documentElement;
+  const LETTERS=['A','B','C','D','E'];
+  const KEY='padronizador-simulado-v1';
+  let state=null, activeImgQ=null, saveWarned=false;
+
+  const uid=()=>Math.random().toString(36).slice(2,9);
+  const $=(s,r=document)=>r.querySelector(s);
+  const esc=(s)=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+  function newQuestion(){return{id:uid(),enunciado:'',alts:['','','','',''],img:null};}
+  function newSection(name){return{id:uid(),nome:name||'Nova disciplina',questions:[newQuestion()]};}
+
+  const PHRASES=[
+    'A verdade é filha do tempo.',
+    'O saber não ocupa lugar.',
+    'A pressa é inimiga da perfeição.',
+    'Devagar se vai ao longe.',
+    'Água mole em pedra dura, tanto bate até que fura.',
+    'Quem tem boca vai a Roma.',
+    'Nem tudo que reluz é ouro.',
+    'A união faz a força.',
+    'Antes tarde do que nunca.',
+    'A prática leva à perfeição.',
+    'Grão a grão, a galinha enche o papo.',
+    'A esperança é a última que morre.',
+    'O hábito não faz o monge.',
+    'Quem não arrisca não petisca.',
+    'A curiosidade é o princípio da sabedoria.',
+    'O conhecimento é um bem que ninguém pode tirar.',
+    'Só sei que nada sei.',
+    'Penso, logo existo.',
+    'Conhece-te a ti mesmo.',
+    'Saber é poder.',
+    'A leitura é uma viagem sem sair do lugar.',
+    'O tempo é o senhor da razão.',
+    'A persistência realiza o impossível.',
+    'A educação transforma o mundo.'
+  ];
+  function pickPhrase(exclude){
+    let p;let guard=0;
+    do{p=PHRASES[Math.floor(Math.random()*PHRASES.length)];guard++;}while(p===exclude&&guard<20);
+    return p;
+  }
+  function defaultCover(){
+    return{enabled:true,area:'Ciências Humanas',areaCustom:'',duration:'quatro horas',
+      logos:[],includeTranscription:true,transcription:pickPhrase(null)};
+  }
+
+  function defaultState(){
+    return{
+      header:{escola:'ECI Auzanir Lacerda',titulo:'Simulado de Ciências Humanas',serie:'2ª série — Ensino Médio',data:'___/___/______',
+        instr:''},
+      cover:defaultCover(),
+      sections:[newSection('História'),newSection('Geografia'),newSection('Filosofia'),newSection('Sociologia')]
+    };
+  }
+
+  /* ---------- persistence ---------- */
+  function load(){
+    try{const raw=localStorage.getItem(KEY);if(raw){const p=JSON.parse(raw);if(p&&p.sections){
+      if(!p.cover)p.cover=defaultCover();
+      if(!Array.isArray(p.cover.logos))p.cover.logos=[];
+      if(typeof p.cover.transcription!=='string')p.cover.transcription=pickPhrase(null);
+      if(typeof p.cover.duration!=='string')p.cover.duration='quatro horas';
+      if(typeof p.cover.enabled!=='boolean')p.cover.enabled=true;
+      if(typeof p.cover.includeTranscription!=='boolean')p.cover.includeTranscription=true;
+      return p;
+    }}}catch(e){}
+    return defaultState();
+  }
+  function save(){
+    try{localStorage.setItem(KEY,JSON.stringify(state));hideNotice();}
+    catch(e){
+      if(!saveWarned){saveWarned=true;showNotice('As imagens são grandes e não couberam para salvar automaticamente neste navegador. Elas continuam funcionando agora e na impressão, mas podem se perder ao fechar a aba. Considere reduzir o tamanho das imagens.');}
+    }
+  }
+  function showNotice(msg){const n=$('#notice');n.textContent=msg;n.style.display='block';}
+  function hideNotice(){/* keep warning until cleared manually */}
+
+  /* ---------- parsing ---------- */
+  function parseRaw(raw){
+    let text=(raw||'').replace(/\r/g,'').replace(/\u00a0/g,' ').trim();
+    if(!text)return null;
+    const lines=text.split('\n');
+    const markerLine=/^\s*[\(\[]?\s*([A-Ea-e])\s*[\)\.\:\-–—]\s+(.*)$/;
+    let idx=[], parsed=[];
+    for(let i=0;i<lines.length;i++){
+      const m=lines[i].match(markerLine);
+      if(m){parsed.push({i,letter:m[1].toUpperCase(),txt:m[2]});}
+    }
+    // keep a clean increasing A,B,C... run
+    let seq=[],expect=0;
+    for(const p of parsed){
+      if(p.letter===LETTERS[expect]){seq.push(p);expect++;}
+      if(expect>=5)break;
+    }
+    if(seq.length>=2){
+      const firstLine=seq[0].i;
+      let en=lines.slice(0,firstLine).join('\n').trim();
+      en=en.replace(/^\s*(quest[ãa]o)?\s*n?[ºo\.]?\s*\d{1,3}\s*[\.\)\-:–]?\s*/i,'').trim();
+      const alts=['','','','',''];
+      for(let k=0;k<seq.length;k++){
+        const startLine=seq[k].i;
+        const endLine=(k+1<seq.length)?seq[k+1].i:lines.length;
+        let chunk=seq[k].txt;
+        const cont=lines.slice(startLine+1,endLine).join(' ').trim();
+        if(cont)chunk=(chunk+' '+cont).trim();
+        alts[LETTERS.indexOf(seq[k].letter)]=chunk.trim();
+      }
+      return{enunciado:en,alts};
+    }
+    // fallback: inline markers anywhere
+    const re=/[\(\[]?\s*([A-Ea-e])\s*[\)\.\:\-–—]\s+/g;
+    let m,hits=[];
+    while((m=re.exec(text))){hits.push({letter:m[1].toUpperCase(),start:m.index,tstart:m.index+m[0].length});}
+    let inseq=[],ex=0;
+    for(const h of hits){if(h.letter===LETTERS[ex]){inseq.push(h);ex++;}if(ex>=5)break;}
+    if(inseq.length>=2){
+      const en=text.slice(0,inseq[0].start).replace(/^\s*(quest[ãa]o)?\s*n?[ºo\.]?\s*\d{1,3}\s*[\.\)\-:–]?\s*/i,'').trim();
+      const alts=['','','','',''];
+      for(let k=0;k<inseq.length;k++){
+        const end=(k+1<inseq.length)?inseq[k+1].start:text.length;
+        alts[LETTERS.indexOf(inseq[k].letter)]=text.slice(inseq[k].tstart,end).trim().replace(/\s+/g,' ');
+      }
+      return{enunciado:en,alts};
+    }
+    return{enunciado:text,alts:['','','','','']};
+  }
+
+  /* ---------- helpers to find ---------- */
+  function findQ(qid){
+    for(const s of state.sections){const q=s.questions.find(x=>x.id===qid);if(q)return{s,q};}
+    return null;
+  }
+  function totalQuestions(){return state.sections.reduce((a,s)=>a+s.questions.length,0);}
+
+  /* ---------- editor render ---------- */
+  function renderEditor(){
+    // header inputs (only set values, don't rebuild — preserve focus)
+    document.querySelectorAll('[data-h]').forEach(inp=>{
+      const k=inp.getAttribute('data-h');
+      if(document.activeElement!==inp)inp.value=state.header[k]||'';
+    });
+    const wrap=$('#sections');
+    wrap.innerHTML='';
+    let running=0;
+    state.sections.forEach((s,si)=>{
+      const sec=document.createElement('div');
+      sec.className='section';sec.dataset.sid=s.id;
+      const head=document.createElement('div');
+      head.className='section-head';
+      head.innerHTML=`
+        <input class="disc-name" data-sname="${s.id}" value="${esc(s.nome)}" placeholder="Nome da disciplina">
+        <span class="section-count">${s.questions.length} ${s.questions.length===1?'questão':'questões'}</span>
+        <button class="btn btn-icon btn-sm" data-delsec="${s.id}" title="Remover disciplina">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+        </button>`;
+      sec.appendChild(head);
+
+      s.questions.forEach((q,qi)=>{
+        running++;
+        const num=String(running).padStart(2,'0');
+        const card=document.createElement('div');
+        card.className='q-card';card.dataset.qid=q.id;
+        card.innerHTML=`
+          <div class="q-head">
+            <span class="q-num">Questão ${num}</span>
+            <span class="spacer"></span>
+            <button class="btn btn-icon btn-sm" data-mv="up" data-q="${q.id}" title="Mover para cima" ${qi===0?'disabled style="opacity:.35"':''}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+            <button class="btn btn-icon btn-sm" data-mv="down" data-q="${q.id}" title="Mover para baixo" ${qi===s.questions.length-1?'disabled style="opacity:.35"':''}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+            <button class="btn btn-icon btn-sm" data-dup="${q.id}" title="Duplicar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+            <button class="btn btn-icon btn-sm" data-delq="${q.id}" title="Remover questão">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+          </div>
+          <div class="q-body">
+            <div class="paste-box">
+              <textarea data-paste="${q.id}" placeholder="Cole aqui a questão como o professor enviou (enunciado + alternativas A a E)…"></textarea>
+              <div class="paste-row">
+                <button class="btn btn-primary btn-sm" data-distribute="${q.id}">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                  Distribuir automaticamente
+                </button>
+                <span class="paste-hint">Separa enunciado e alternativas. Depois é só revisar abaixo.</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Enunciado</label>
+              <textarea data-en="${q.id}" placeholder="Texto da questão…">${esc(q.enunciado)}</textarea>
+            </div>
+            <div class="field">
+              <label>Alternativas</label>
+              <div class="alts">
+                ${LETTERS.map((L,ai)=>`
+                  <div class="alt-row">
+                    <span class="alt-key">${L}</span>
+                    <input type="text" data-alt="${q.id}" data-ai="${ai}" value="${esc(q.alts[ai])}" placeholder="Alternativa ${L}">
+                  </div>`).join('')}
+              </div>
+            </div>
+            ${q.img?`
+              <div class="img-thumb">
+                <img src="${q.img.data}" alt="">
+                <span class="nm">${esc(q.img.name||'imagem')}</span>
+                <button class="btn btn-sm" data-delimg="${q.id}">Remover</button>
+              </div>`:`
+              <div class="img-zone" data-imgzone="${q.id}" tabindex="0" role="button">
+                <span class="ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>
+                <span class="txt"><b>Inserir imagem</b> — clique para escolher, arraste um arquivo, ou cole (Ctrl+V) com esta área selecionada.</span>
+                <input type="file" accept="image/*" data-imgfile="${q.id}" style="display:none">
+              </div>`}
+          </div>`;
+        sec.appendChild(card);
+      });
+
+      const addBtn=document.createElement('button');
+      addBtn.className='btn add-q';
+      addBtn.dataset.addq=s.id;
+      addBtn.innerHTML=`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Adicionar questão em ${esc(s.nome)}`;
+      sec.appendChild(addBtn);
+      wrap.appendChild(sec);
+    });
+    syncCover();renderCoverLogos();
+  }
+
+  /* ---------- cover helpers ---------- */
+  function composition(){
+    let n=0,parts=[];
+    state.sections.forEach(s=>{const c=s.questions.length;if(c>0){parts.push({name:(s.nome||'—').trim()||'—',from:n+1,to:n+c});n+=c;}});
+    return{total:n,parts};
+  }
+  const pad2=x=>String(x).padStart(2,'0');
+  function compositionText(){
+    const {total,parts}=composition();
+    if(total===0)return 'Este CADERNO DE QUESTÕES ainda não contém questões.';
+    const seg=parts.map(p=>p.from===p.to?`questão de número ${pad2(p.from)} — ${p.name}`:`questões de número ${pad2(p.from)} a ${pad2(p.to)} — ${p.name}`).join('; ');
+    return `Este CADERNO DE QUESTÕES contém ${total} ${total===1?'questão numerada':'questões numeradas'} de 01 a ${pad2(total)}, dispostas da seguinte maneira: ${seg}.`;
+  }
+  function coverTitle(){
+    const c=state.cover;const area=c.area==='__custom__'?(c.areaCustom||''):(c.area||'');
+    return ('Simulado '+area).trim();
+  }
+  function coverInstructions(){
+    const c=state.cover;
+    return[
+      compositionText(),
+      'Confira se a quantidade e a ordem das questões do seu CADERNO DE QUESTÕES estão de acordo com as instruções anteriores. Caso o caderno esteja incompleto, tenha defeito ou apresente qualquer divergência, comunique ao aplicador da sala para que ele tome as providências cabíveis.',
+      'Para cada uma das questões objetivas, são apresentadas 5 opções. Apenas uma responde corretamente à questão.',
+      `O tempo disponível para estas provas é de ${(c.duration||'quatro horas').trim()}.`,
+      'Reserve tempo suficiente para preencher o CARTÃO-RESPOSTA.',
+      'Os rascunhos e as marcações assinaladas no CADERNO DE QUESTÕES não serão considerados na avaliação.',
+      'Quando terminar as provas, acene para chamar o aplicador e entregue este CADERNO DE QUESTÕES e o CARTÃO-RESPOSTA.',
+      'Você poderá deixar o local de prova somente após decorridas duas horas do início da aplicação e poderá levar seu CADERNO DE QUESTÕES ao deixar em definitivo a sala de prova nos 30 minutos que antecedem o término das provas.'
+    ];
+  }
+  function boldTerms(t){return esc(t).replace(/CADERNO DE QUESTÕES/g,'<b>$&</b>').replace(/CARTÃO-RESPOSTA/g,'<b>$&</b>');}
+  const LOGO_LABELS=['6ª GRE','SECRETARIA DE ESTADO DA EDUCAÇÃO','GOVERNO DA PARAÍBA','ESCOLA CIDADÃ INTEGRAL AUZANIR LACERDA'];
+  function coverHTML(){
+    const c=state.cover,h=state.header;
+    let logos;
+    if(c.logos.length){logos=c.logos.map(l=>`<div class="lg"><img src="${l.data}" alt=""></div>`).join('');}
+    else{logos=LOGO_LABELS.map(t=>`<div class="lbl">${esc(t)}</div>`).join('');}
+    const instr=coverInstructions().map(t=>`<li>${boldTerms(t)}</li>`).join('');
+    const transc=c.includeTranscription?`
+      <div class="cov-attn">ATENÇÃO: transcreva no espaço apropriado do seu CARTÃO-RESPOSTA, com sua caligrafia usual, considerando as letras maiúsculas e minúsculas, a seguinte frase:</div>
+      <div class="cov-phrase">${esc(c.transcription||'')}</div>`:'';
+    return `<div class="sheet cover-sheet">
+      <div class="cov-logos">${logos}</div>
+      <div class="cov-ident">
+        <div class="t">Dados de Identificação</div>
+        <div class="r"><div class="c">Aluno(a):</div></div>
+        <div class="r">
+          <div class="c">Série: ${esc(h.serie||'')}</div>
+          <div class="c">Turma:</div>
+          <div class="c">Data: ${esc(h.data||'___/___/______')}</div>
+        </div>
+      </div>
+      <div class="cov-title">${esc(coverTitle().toUpperCase())}</div>
+      <div class="cov-leia">LEIA ATENTAMENTE AS INSTRUÇÕES SEGUINTES:</div>
+      <div class="cov-instr"><ol>${instr}</ol></div>
+      ${transc}
+    </div>`;
+  }
+
+  /* ---------- enunciado structure (paragraphs + list items) ---------- */
+  function parseEnun(text){
+    const lines=(text||'').replace(/\r/g,'').split('\n');
+    const blocks=[];let para=[];
+    const flush=()=>{if(para.length){blocks.push({type:'p',text:para.join(' ')});para=[];}};
+    const mFill=/^(\(\s*_+\s*\)|\(\s{0,3}\))\s+(.*)$/;
+    const mRoman=/^([IVX]{1,5})[\.\)]\s+(.*)$/;
+    const mNumParen=/^(\(\d{1,3}\))\s+(.*)$/;
+    const mNumDot=/^(\d{1,3})[\.\)]\s+(.*)$/;
+    const mLetter=/^([a-eA-E])[\.\)]\s+(.*)$/;
+    lines.forEach(raw=>{
+      const line=raw.trim();
+      if(!line){flush();blocks.push({type:'gap'});return;}
+      let m;
+      if(m=line.match(mFill)){flush();blocks.push({type:'item',marker:m[1].trim(),text:m[2].trim()});return;}
+      if(m=line.match(mRoman)){flush();blocks.push({type:'item',marker:m[1]+'.',text:m[2].trim()});return;}
+      if(m=line.match(mNumParen)){flush();blocks.push({type:'item',marker:m[1],text:m[2].trim()});return;}
+      if(m=line.match(mNumDot)){flush();blocks.push({type:'item',marker:m[1]+'.',text:m[2].trim()});return;}
+      if(m=line.match(mLetter)){flush();blocks.push({type:'item',marker:m[1]+')',text:m[2].trim()});return;}
+      para.push(line);
+    });
+    flush();
+    const out=[];
+    blocks.forEach(b=>{if(b.type==='gap'&&(out.length===0||out[out.length-1].type==='gap'))return;out.push(b);});
+    while(out.length&&out[out.length-1].type==='gap')out.pop();
+    return out;
+  }
+  function enunHTML(q,num){
+    const raw=(q.enunciado||'').trim();
+    if(!raw)return `<div class="en"><p class="en-p"><span class="qn">${num}.</span> <span class="q-empty">(questão em branco)</span></p></div>`;
+    const blocks=parseEnun(raw);let out='',numbered=false;
+    blocks.forEach(b=>{
+      if(b.type==='gap'){out+=`<div class="en-gap"></div>`;return;}
+      if(b.type==='p'){const pref=numbered?'':`<span class="qn">${num}.</span> `;numbered=true;out+=`<p class="en-p">${pref}${esc(b.text)}</p>`;return;}
+      if(b.type==='item'){
+        if(!numbered){out+=`<p class="en-p"><span class="qn">${num}.</span></p>`;numbered=true;}
+        out+=`<div class="en-item"><span class="en-mk">${esc(b.marker)}</span><span class="en-tx">${esc(b.text)}</span></div>`;
+      }
+    });
+    return `<div class="en">${out}</div>`;
+  }
+
+  function examSheetHTML(){
+    const h=state.header,slim=state.cover.enabled;
+    let head;
+    if(slim){
+      head=h.instr?`<div class="sheet-instr" style="margin-top:0">${esc(h.instr)}</div>`:'';
+    }else{
+      const ident=`
+      <div class="sheet-ident">
+        <div class="fld">Nome<div class="ln"></div></div>
+        ${h.serie?`<div class="fld" style="flex:.6">Turma<div class="ln"></div></div>`:''}
+        <div class="fld" style="flex:.5">Nº<div class="ln"></div></div>
+      </div>`;
+      head=`
+      <div class="sheet-head">
+        ${h.escola?`<div class="escola">${esc(h.escola)}</div>`:''}
+        <div class="titulo">${esc(h.titulo||'Simulado')}</div>
+        ${(h.serie||h.data)?`<div class="meta">${[h.serie?esc(h.serie):'',h.data?('Data: '+esc(h.data)):''].filter(Boolean).join('  •  ')}</div>`:''}
+      </div>
+      ${ident}
+      ${h.instr?`<div class="sheet-instr">${esc(h.instr)}</div>`:''}`;
+    }
+
+    let body='',running=0,anyQ=false,firstDisc=true;
+    state.sections.forEach(s=>{
+      if(s.questions.length===0)return;
+      body+=`<div class="disc-header ${firstDisc?'':'notfirst'}">${esc(s.nome)}</div>`;
+      firstDisc=false;
+      s.questions.forEach(q=>{
+        running++;anyQ=true;
+        const num=pad2(running);
+        let altsInner=q.alts.map((a,i)=>a.trim()?`<div class="alt"><span class="lk">${LETTERS[i]})</span>${esc(a)}</div>`:'').join('');
+        const alts=altsInner?`<div class="alt-group">${altsInner}</div>`:'';
+        body+=`<div class="q">
+          ${enunHTML(q,num)}
+          ${q.img?`<div class="qimg"><img src="${q.img.data}" alt=""></div>`:''}
+          ${alts}
+        </div>`;
+      });
+    });
+    if(!anyQ){
+      return `<div class="sheet">${head}<div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>
+        <div>Cole as questões no editor à esquerda.<br>A folha aparece aqui, já pronta em duas colunas.</div>
+      </div></div>`;
+    }
+    return `<div class="sheet">${head}<div class="columns">${body}</div></div>`;
+  }
+
+  function updateCoverNote(){
+    const el=$('#cover-composition');if(!el)return;
+    const {total}=composition();
+    el.innerHTML=`<b>Instrução 1 (gerada automaticamente):</b> ${boldTerms(compositionText())}`;
+  }
+
+  /* ---------- preview render ---------- */
+  function renderPreview(){
+    $('#totalCount').textContent=totalQuestions()+' '+(totalQuestions()===1?'questão':'questões');
+    updateCoverNote();
+    let html='';
+    if(state.cover.enabled)html+=coverHTML();
+    html+=examSheetHTML();
+    $('#sheetWrap').innerHTML=html;
+  }
+
+  function syncCover(){
+    const c=state.cover;
+    const en=$('#cover-enabled');if(en)en.checked=!!c.enabled;
+    const body=$('#cover-body');if(body)body.classList.toggle('cover-off',!c.enabled);
+    const area=$('#cover-area');if(area)area.value=c.area;
+    const cw=$('#cover-area-custom-wrap');if(cw)cw.style.display=(c.area==='__custom__')?'':'none';
+    const cc=$('#cover-area-custom');if(cc&&document.activeElement!==cc)cc.value=c.areaCustom||'';
+    const dur=$('#cover-duration');if(dur&&document.activeElement!==dur)dur.value=c.duration||'';
+    const tOn=$('#cover-transc-on');if(tOn)tOn.checked=!!c.includeTranscription;
+    const tw=$('#cover-transc-wrap');if(tw)tw.style.display=c.includeTranscription?'':'none';
+    const tr=$('#cover-transc');if(tr&&document.activeElement!==tr)tr.value=c.transcription||'';
+    updateCoverNote();
+  }
+  function renderCoverLogos(){
+    const box=$('#cover-logos');if(!box)return;const c=state.cover;
+    box.innerHTML=c.logos.map((l,i)=>`<div class="logo-tile"><img src="${l.data}" alt=""><button class="rm" type="button" data-rmlogo="${i}" title="Remover">×</button></div>`).join('')
+      +(c.logos.length<6?`<div class="logo-add" id="cover-logo-add" title="Adicionar logo">+</div>`:'');
+  }
+
+  function renderAll(){renderEditor();renderPreview();save();}
+
+  /* ---------- events: header ---------- */
+  document.querySelectorAll('[data-h]').forEach(inp=>{
+    inp.addEventListener('input',()=>{state.header[inp.getAttribute('data-h')]=inp.value;renderPreview();save();});
+  });
+
+  /* ---------- events: cover config ---------- */
+  (function wireCover(){
+    const on=$('#cover-enabled');if(on)on.addEventListener('change',()=>{state.cover.enabled=on.checked;syncCover();renderPreview();save();});
+    const area=$('#cover-area');if(area)area.addEventListener('change',()=>{state.cover.area=area.value;syncCover();renderPreview();save();});
+    const cc=$('#cover-area-custom');if(cc)cc.addEventListener('input',()=>{state.cover.areaCustom=cc.value;renderPreview();save();});
+    const dur=$('#cover-duration');if(dur)dur.addEventListener('input',()=>{state.cover.duration=dur.value;renderPreview();save();});
+    const tOn=$('#cover-transc-on');if(tOn)tOn.addEventListener('change',()=>{state.cover.includeTranscription=tOn.checked;syncCover();renderPreview();save();});
+    const tr=$('#cover-transc');if(tr)tr.addEventListener('input',()=>{state.cover.transcription=tr.value;renderPreview();save();});
+    const np=$('#cover-newphrase');if(np)np.addEventListener('click',()=>{state.cover.transcription=pickPhrase(state.cover.transcription);const t=$('#cover-transc');if(t)t.value=state.cover.transcription;renderPreview();save();toast('Nova frase sorteada.');});
+    const logos=$('#cover-logos'),file=$('#cover-logo-file');
+    if(logos)logos.addEventListener('click',(e)=>{
+      if(e.target.closest('#cover-logo-add')){if(file)file.click();return;}
+      const rm=e.target.closest('[data-rmlogo]');
+      if(rm){state.cover.logos.splice(+rm.getAttribute('data-rmlogo'),1);renderCoverLogos();renderPreview();save();}
+    });
+    if(file)file.addEventListener('change',()=>{
+      const picked=Array.from(file.files||[]).slice(0,6-state.cover.logos.length);
+      if(!picked.length){file.value='';return;}
+      let pending=picked.length;
+      picked.forEach(f=>{const rd=new FileReader();
+        rd.onload=()=>{state.cover.logos.push({data:rd.result,name:f.name||'logo'});if(--pending===0){file.value='';renderCoverLogos();renderPreview();save();}};
+        rd.onerror=()=>{if(--pending===0){file.value='';renderCoverLogos();renderPreview();save();}};
+        rd.readAsDataURL(f);});
+    });
+  })();
+
+  /* ---------- events: delegated editor ---------- */
+  const editor=$('.pane-editor');
+
+  // typing in enunciado / alternativas / section name -> update state + preview only (keep focus)
+  editor.addEventListener('input',(e)=>{
+    const t=e.target;
+    if(t.hasAttribute('data-en')){const r=findQ(t.getAttribute('data-en'));if(r){r.q.enunciado=t.value;renderPreview();save();}}
+    else if(t.hasAttribute('data-alt')){const r=findQ(t.getAttribute('data-alt'));if(r){r.q.alts[+t.getAttribute('data-ai')]=t.value;renderPreview();save();}}
+    else if(t.hasAttribute('data-sname')){const s=state.sections.find(x=>x.id===t.getAttribute('data-sname'));if(s){s.nome=t.value;renderPreview();
+      // update the add-question button label live without full rebuild
+      const btn=editor.querySelector(`[data-addq="${s.id}"]`);if(btn)btn.innerHTML=btn.innerHTML.replace(/Adicionar questão em .*/,'')+'';
+      save();}}
+  });
+
+  editor.addEventListener('click',(e)=>{
+    const b=e.target.closest('button, .img-zone');
+    if(!b)return;
+
+    if(b.dataset.distribute){
+      const qid=b.dataset.distribute;
+      const ta=editor.querySelector(`[data-paste="${qid}"]`);
+      const parsed=parseRaw(ta?ta.value:'');
+      if(parsed){const r=findQ(qid);if(r){r.q.enunciado=parsed.enunciado;r.q.alts=parsed.alts.slice(0,5);}renderAll();}
+      return;
+    }
+    if(b.dataset.addq){const s=state.sections.find(x=>x.id===b.dataset.addq);if(s){s.questions.push(newQuestion());renderAll();}return;}
+    if(b.dataset.delq){const r=findQ(b.dataset.delq);if(r){r.s.questions=r.s.questions.filter(q=>q.id!==b.dataset.delq);renderAll();}return;}
+    if(b.dataset.dup){const r=findQ(b.dataset.dup);if(r){const c=JSON.parse(JSON.stringify(r.q));c.id=uid();const i=r.s.questions.findIndex(q=>q.id===b.dataset.dup);r.s.questions.splice(i+1,0,c);renderAll();}return;}
+    if(b.dataset.mv){const r=findQ(b.dataset.q);if(r){const arr=r.s.questions;const i=arr.findIndex(q=>q.id===b.dataset.q);const j=b.dataset.mv==='up'?i-1:i+1;if(j>=0&&j<arr.length){[arr[i],arr[j]]=[arr[j],arr[i]];renderAll();}}return;}
+    if(b.dataset.delsec){
+      const sid=b.dataset.delsec;
+      (async()=>{
+        const ok=state.sections.length<=1||await confirmModal('Remover esta disciplina e todas as suas questões?','Remover','Remover disciplina');
+        if(ok){
+          state.sections=state.sections.filter(s=>s.id!==sid);
+          if(state.sections.length===0)state.sections.push(newSection('Nova disciplina'));
+          renderAll();
+        }
+      })();
+      return;
+    }
+    if(b.dataset.delimg){const r=findQ(b.dataset.delimg);if(r){r.q.img=null;renderAll();}return;}
+    if(b.dataset.imgzone){
+      const qid=b.dataset.imgzone;activeImgQ=qid;
+      editor.querySelectorAll('.img-zone').forEach(z=>z.classList.toggle('active',z.dataset.imgzone===qid));
+      const fi=editor.querySelector(`[data-imgfile="${qid}"]`);
+      // clicking the zone (not focusing for paste) opens picker; focus for paste handled by keyboard
+      if(e.type==='click'&&!e.detail===false){ /* noop */ }
+      if(fi)fi.click();
+      return;
+    }
+  });
+
+  // focus img-zone (for paste) also marks active
+  editor.addEventListener('focusin',(e)=>{
+    const z=e.target.closest('.img-zone');
+    if(z){activeImgQ=z.dataset.imgzone;editor.querySelectorAll('.img-zone').forEach(x=>x.classList.toggle('active',x===z));}
+  });
+
+  // file input change
+  editor.addEventListener('change',(e)=>{
+    const fi=e.target.closest('[data-imgfile]');
+    if(fi&&fi.files&&fi.files[0]){attachImage(fi.getAttribute('data-imgfile'),fi.files[0]);}
+  });
+
+  // drag & drop on zones
+  editor.addEventListener('dragover',(e)=>{const z=e.target.closest('.img-zone');if(z){e.preventDefault();z.classList.add('drag');}});
+  editor.addEventListener('dragleave',(e)=>{const z=e.target.closest('.img-zone');if(z)z.classList.remove('drag');});
+  editor.addEventListener('drop',(e)=>{
+    const z=e.target.closest('.img-zone');if(!z)return;e.preventDefault();z.classList.remove('drag');
+    const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(f&&f.type.startsWith('image/'))attachImage(z.dataset.imgzone,f);
+  });
+
+  // paste image anywhere when a zone is active
+  document.addEventListener('paste',(e)=>{
+    if(!activeImgQ)return;
+    const items=e.clipboardData&&e.clipboardData.items;if(!items)return;
+    for(const it of items){
+      if(it.type&&it.type.startsWith('image/')){
+        const f=it.getAsFile();if(f){e.preventDefault();attachImage(activeImgQ,f);break;}
+      }
+    }
+  });
+
+  function attachImage(qid,file){
+    const r=findQ(qid);if(!r)return;
+    const reader=new FileReader();
+    reader.onload=()=>{r.q.img={data:reader.result,name:file.name||'imagem'};activeImgQ=null;renderAll();};
+    reader.readAsDataURL(file);
+  }
+
+  /* ---------- toast ---------- */
+  let toastT;
+  function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3400);}
+
+  /* ---------- confirm modal (works where native confirm() is blocked) ---------- */
+  function confirmModal(msg,okLabel,title){
+    return new Promise(res=>{
+      const back=$('#modalBack');if(!back){res(false);return;}
+      $('#modalTitle').textContent=title||'Confirmar';
+      $('#modalMsg').textContent=msg;
+      const ok=$('#modalOk'),cancel=$('#modalCancel');
+      ok.textContent=okLabel||'Confirmar';
+      const close=(v)=>{back.classList.remove('show');ok.onclick=null;cancel.onclick=null;back.onclick=null;document.removeEventListener('keydown',onKey);res(v);};
+      const onKey=(e)=>{if(e.key==='Escape')close(false);};
+      ok.onclick=()=>close(true);cancel.onclick=()=>close(false);
+      back.onclick=(e)=>{if(e.target===back)close(false);};
+      document.addEventListener('keydown',onKey);
+      back.classList.add('show');ok.focus();
+    });
+  }
+
+  /* ---------- PDF generation ---------- */
+  function slug(s){
+    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||'simulado';
+  }
+  function loadImg(dataUrl){
+    return new Promise(res=>{
+      const im=new Image();
+      im.onload=()=>{try{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;
+        c.getContext('2d').drawImage(im,0,0);res({url:c.toDataURL('image/png'),w:im.naturalWidth,h:im.naturalHeight});}catch(e){res(null);}};
+      im.onerror=()=>res(null);im.src=dataUrl;
+    });
+  }
+  async function generatePdfBlob(){
+    if(!(window.jspdf&&window.jspdf.jsPDF)){try{if(typeof loadJsPDF==='function')await loadJsPDF();}catch(e){}}
+    if(!window.jspdf||!window.jspdf.jsPDF)throw new Error('jspdf-unavailable');
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'pt',format:'a4',compress:true});
+    const PW=doc.internal.pageSize.getWidth(),PH=doc.internal.pageSize.getHeight();
+    const ML=40,MR=40,MT=42,MB=46,GUT=24;
+    const contentW=PW-ML-MR,colW=(contentW-GUT)/2,colX=[ML,ML+colW+GUT],pageBottom=PH-MB;
+
+    // preload + normalize images to PNG (questions + cover logos)
+    const imgMap={};const jobs=[];
+    state.sections.forEach(s=>s.questions.forEach(q=>{if(q.img&&q.img.data){jobs.push(loadImg(q.img.data).then(r=>{if(r)imgMap[q.id]=r;}));}}));
+    const logoImgs=[];
+    state.cover.logos.forEach((l,i)=>{jobs.push(loadImg(l.data).then(r=>{if(r)logoImgs[i]=r;}));});
+    await Promise.all(jobs);
+    const logos=logoImgs.filter(Boolean);
+
+    let contentTop=MT;
+    const h=state.header;
+
+    function drawCover(){
+      const cML=36,cMR=36,cMT=30,W=PW-cML-cMR;let cy=cMT;
+      const logoH=74;
+      if(logos.length){
+        const n=logos.length,slotW=W/n;
+        logos.forEach((im,i)=>{
+          let dw=logoH*(im.w/im.h),dh=logoH;const maxW=slotW*0.94;if(dw>maxW){dw=maxW;dh=maxW*(im.h/im.w);}
+          const cx=cML+slotW*i+slotW/2;try{doc.addImage(im.url,'PNG',cx-dw/2,cy+(logoH-dh)/2,dw,dh);}catch(e){}
+        });
+      }else{
+        doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(90,100,120);
+        const labels=['6ª GRE','SECRETARIA DE ESTADO DA EDUCAÇÃO','GOVERNO DA PARAÍBA','ESCOLA CIDADÃ INTEGRAL AUZANIR LACERDA'];
+        const n=labels.length,slotW=W/n;
+        labels.forEach((t,i)=>{const ls=doc.splitTextToSize(t,slotW-6);let yy=cy+logoH/2-((ls.length-1)*4.2);ls.forEach(l=>{doc.text(l,cML+slotW*i+slotW/2,yy,{align:'center'});yy+=8.5;});});
+      }
+      cy+=logoH+16;
+      doc.setTextColor(19,26,38);doc.setDrawColor(19,26,38);doc.setLineWidth(.8);
+      const rowH=18,r1=cy,r2=cy+rowH,r3=cy+rowH*2;
+      doc.rect(cML,r1,W,rowH);doc.setFont('helvetica','normal');doc.setFontSize(10);
+      doc.text('Dados de Identificação',PW/2,r1+rowH-6,{align:'center'});
+      doc.rect(cML,r2,W,rowH);doc.text('Aluno(a):',cML+6,r2+rowH-6);
+      doc.rect(cML,r3,W,rowH);
+      const c2=cML+W*0.44,c3=cML+W*0.72;doc.line(c2,r3,c2,r3+rowH);doc.line(c3,r3,c3,r3+rowH);
+      doc.text('Série: '+((h.serie||'').trim()),cML+6,r3+rowH-6);
+      doc.text('Turma:',c2+6,r3+rowH-6);
+      doc.text('Data: '+((h.data||'___/___/______').trim()),c3+6,r3+rowH-6);
+      cy=r3+rowH+18;
+      doc.setFont('helvetica','bold');doc.setFontSize(15);
+      doc.text(coverTitle().toUpperCase(),PW/2,cy+4,{align:'center'});cy+=26;
+      doc.setFontSize(12);doc.text('LEIA ATENTAMENTE AS INSTRUÇÕES SEGUINTES:',PW/2,cy,{align:'center'});cy+=14;
+      const instr=coverInstructions();
+      doc.setFont('helvetica','normal');doc.setFontSize(9);
+      const padX=13,padY=11,numW=17,lh=11.4,innerW=W-padX*2-numW;
+      const wrapped=instr.map(t=>doc.splitTextToSize(t,innerW));
+      let ih=padY;wrapped.forEach(ls=>{ih+=ls.length*lh+4;});ih+=padY-4;
+      doc.setDrawColor(19,26,38);doc.setLineWidth(.8);doc.rect(cML,cy,W,ih);
+      let iy=cy+padY+7;
+      wrapped.forEach((ls,i)=>{doc.setFont('helvetica','bold');doc.text((i+1)+'.',cML+padX,iy);doc.setFont('helvetica','normal');ls.forEach(l=>{doc.text(l,cML+padX+numW,iy);iy+=lh;});iy+=4;});
+      cy+=ih+18;
+      if(state.cover.includeTranscription){
+        doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(19,26,38);
+        const attn='ATENÇÃO: transcreva no espaço apropriado do seu CARTÃO-RESPOSTA, com sua caligrafia usual, considerando as letras maiúsculas e minúsculas, a seguinte frase:';
+        doc.splitTextToSize(attn,W-44).forEach(l=>{doc.text(l,PW/2,cy,{align:'center'});cy+=13;});cy+=8;
+        const phH=66;doc.setLineWidth(.8);doc.rect(cML,cy,W,phH);
+        doc.setFont('times','normal');doc.setFontSize(20);
+        const pl=doc.splitTextToSize(state.cover.transcription||'',W-40);
+        let py=cy+phH/2-((pl.length-1)*11)+6;pl.forEach(l=>{doc.text(l,PW/2,py,{align:'center'});py+=22;});
+      }
+    }
+
+    let hy=MT;
+    if(state.cover.enabled){
+      drawCover();doc.addPage();hy=MT;
+      if(h.instr){doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(90,100,120);doc.splitTextToSize(h.instr,contentW).forEach(l=>{doc.text(l,ML,hy+8);hy+=11;});hy+=6;}
+    }else{
+      doc.setTextColor(20,26,38);
+      if(h.escola){doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text(h.escola.toUpperCase(),ML,hy+9);hy+=17;}
+      doc.setFont('times','bold');doc.setFontSize(15);
+      doc.splitTextToSize(h.titulo||'Simulado',contentW).forEach(l=>{doc.text(l,ML,hy+11);hy+=18;});
+      const meta=[];if(h.serie)meta.push(h.serie);if(h.data)meta.push('Data: '+h.data);
+      if(meta.length){doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(90,100,120);doc.text(meta.join('     •     '),ML,hy+8);hy+=12;}
+      hy+=6;doc.setDrawColor(20,26,38);doc.setLineWidth(1.2);doc.line(ML,hy,PW-MR,hy);hy+=16;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(60,68,84);
+      doc.text('Nome:',ML,hy);doc.setDrawColor(180,186,196);doc.setLineWidth(.6);
+      doc.line(ML+34,hy+2,ML+contentW*0.60,hy+2);
+      doc.text('Turma:',ML+contentW*0.64,hy);doc.line(ML+contentW*0.64+38,hy+2,ML+contentW*0.83,hy+2);
+      doc.text('Nº:',ML+contentW*0.86,hy);doc.line(ML+contentW*0.86+18,hy+2,PW-MR,hy+2);
+      hy+=16;
+      if(h.instr){doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(90,100,120);
+        doc.splitTextToSize(h.instr,contentW).forEach(l=>{doc.text(l,ML,hy+8);hy+=11;});hy+=2;}
+      doc.setDrawColor(200,205,214);doc.setLineWidth(.6);doc.line(ML,hy,PW-MR,hy);hy+=12;
+    }
+    contentTop=hy;
+
+    const LH_EN=12.6,LH_ALT=11.6,FS_EN=10,FS_ALT=9.5,QGAP=9,EN_GUT=20,QHDR_H=18;let running=0;
+
+    function enunBlocks(q,num){
+      const raw=(q.enunciado||'').trim();
+      if(!raw)return[{type:'p',text:'(questão em branco)'}];
+      return parseEnun(raw);
+    }
+    function qNoJustify(q){
+      try{ var bs=parseEnun((q.enunciado||'').trim()); return bs.some(function(b){return b.type==='item' && (/^[IVX]+\.$/.test(b.marker)||/^\(/.test(b.marker));}); }catch(e){return false;}
+    }
+    function renderEnun(blocks,x,startY,draw,W,justify){
+      let yy=startY;
+      doc.setFont('times','normal');doc.setFontSize(FS_EN);doc.setTextColor(19,26,38);
+      blocks.forEach(b=>{
+        if(b.type==='gap'){yy+=5;return;}
+        if(b.type==='p'){
+          const lines=doc.splitTextToSize(b.text,W);
+          if(draw){
+            if(justify&&lines.length>1){
+              doc.setLineHeightFactor(LH_EN/FS_EN);
+              doc.text(lines,x,yy+FS_EN*0.9,{maxWidth:W,align:'justify'});
+              doc.setLineHeightFactor(1.15);
+            } else { lines.forEach((l,i)=>doc.text(l,x,yy+i*LH_EN+FS_EN*0.9)); }
+          }
+          yy+=LH_EN*lines.length; return;
+        }
+        const bw=W-EN_GUT,lines=doc.splitTextToSize(b.text||'',bw),n=Math.max(1,lines.length);
+        if(draw){
+          doc.text(b.marker,x,yy+FS_EN*0.9);
+          if(justify&&n>1){
+            doc.setLineHeightFactor(LH_EN/FS_EN);
+            doc.text(lines,x+EN_GUT,yy+FS_EN*0.9,{maxWidth:bw,align:'justify'});
+            doc.setLineHeightFactor(1.15);
+          } else { lines.forEach((l,i)=>doc.text(l,x+EN_GUT,yy+i*LH_EN+FS_EN*0.9)); }
+        }
+        yy+=LH_EN*n;
+      });
+      return yy;
+    }
+    function imgDims(q,W){
+      const im=imgMap[q.id];if(!im)return null;
+      let dw=W,dh=W*(im.h/im.w);const cap=500;
+      if(dh>cap){dh=cap;dw=cap*(im.w/im.h);}
+      return{im,dw,dh};
+    }
+    function measureQ(q,num,W){
+      let hh=QHDR_H+renderEnun(enunBlocks(q,num),0,0,false,W);
+      const d=imgDims(q,W);if(d)hh+=d.dh+8;
+      const anyAlt=q.alts.some(a=>a.trim());
+      if(anyAlt)hh+=QGAP;
+      doc.setFont('times','normal');doc.setFontSize(FS_ALT);
+      q.alts.forEach(a=>{if(a.trim())hh+=Math.max(1,doc.splitTextToSize(a.trim(),W-14).length)*LH_ALT;});
+      return hh+QGAP;
+    }
+    function drawQ(q,num,x,startY,W){
+      // cabeçalho da questão (estilo ENEM): "QUESTÃO NN" + barra de transição
+      let yy=startY+4;
+      doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(19,26,38);
+      const qlabel='QUESTÃO '+num;
+      doc.text(qlabel,x,yy+8);
+      const lw=doc.getTextWidth(qlabel), barY=yy+5.5, bx=x+lw+7;
+      doc.setLineCap('butt');
+      doc.setDrawColor(15,110,86);doc.setLineWidth(2.6);doc.line(bx,barY,bx+26,barY);
+      doc.setDrawColor(30,40,55);doc.setLineWidth(2.6);doc.line(bx+29,barY,x+W,barY);
+      yy=startY+QHDR_H;
+      const jf=true;
+      yy=renderEnun(enunBlocks(q,num),x,yy,true,W,jf);
+      const d=imgDims(q,W);
+      if(d){const ix=x+(W-d.dw)/2;yy+=4;try{doc.addImage(d.im.url,'PNG',ix,yy,d.dw,d.dh);}catch(e){}yy+=d.dh+4;}
+      const anyAlt=q.alts.some(a=>a.trim());
+      if(anyAlt)yy+=QGAP;
+      q.alts.forEach((a,i)=>{if(a.trim()){
+        const lines=doc.splitTextToSize(a.trim(),W-14);
+        const cy=yy+FS_ALT*0.55;
+        doc.setDrawColor(19,26,38);doc.setLineWidth(.7);doc.circle(x+3.4,cy,4.4,'S');
+        doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(19,26,38);
+        doc.text(LETTERS[i],x+3.4,cy+2.7,{align:'center'});
+        doc.setFont('times','normal');doc.setFontSize(FS_ALT);doc.setTextColor(19,26,38);
+        if(jf&&lines.length>1){
+          doc.setLineHeightFactor(LH_ALT/FS_ALT);
+          doc.text(lines,x+13,yy+FS_ALT*0.9,{maxWidth:W-13,align:'justify'});
+          doc.setLineHeightFactor(1.15);
+        } else { lines.forEach((l,li)=>doc.text(l,x+13,yy+li*LH_ALT+FS_ALT*0.9)); }
+        yy+=LH_ALT*lines.length;
+      }});
+      return yy+QGAP;
+    }
+
+    let colY=[contentTop,contentTop],curCol=0;
+    function newPage(){doc.addPage();contentTop=MT;colY=[MT,MT];curCol=0;}
+    function placeCol(hgt,minNeed){
+      const need=Math.max(hgt,minNeed||0);
+      if(colY[curCol]+need>pageBottom){
+        if(curCol===0&&colY[1]+need<=pageBottom)curCol=1;else newPage();
+      }
+      const x=colX[curCol],yy=colY[curCol];colY[curCol]+=hgt;return{x,y:yy};
+    }
+
+    for(const s of state.sections){
+      if(!s.questions.length)continue;
+      const p=placeCol(22,54);
+      doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(19,26,38);
+      doc.text((s.nome||'').toUpperCase(),p.x,p.y+9);
+      doc.setDrawColor(19,26,38);doc.setLineWidth(.8);doc.line(p.x,p.y+13,p.x+colW,p.y+13);
+      for(const q of s.questions){
+        running++;const num=String(running).padStart(2,'0');
+        const hgt=measureQ(q,num,colW);const pos=placeCol(hgt);drawQ(q,num,pos.x,pos.y,colW);
+      }
+    }
+    return doc.output('blob');
+  }
+
+  async function resolveDownloads(){
+    try{if(window.claude&&typeof window.claude.use==='function')return await window.claude.use('downloads');}catch(e){}
+    return null;
+  }
+
+  let pdfBusy=false;
+  async function baixarPDF(){
+    if(pdfBusy)return;
+    if(totalQuestions()===0){toast('Adicione ao menos uma questão antes de gerar o PDF.');return;}
+    pdfBusy=true;
+    const btn=$('#btnDownload');const label=btn?btn.innerHTML:'';
+    if(btn){btn.disabled=true;btn.innerHTML='Gerando PDF…';}
+    try{
+      let blob;
+      try{blob=await generatePdfBlob();}
+      catch(e){toast('Não consegui montar o PDF aqui — abrindo a impressão do navegador.');window.print();return;}
+      const downloads=await resolveDownloads();
+      if(downloads){
+        try{
+          const r=await downloads.save({filename:slug(state.header.titulo)+'.pdf',data:blob});
+          if(!r||r.status!=='delivered')toast('PDF pronto.');
+        }catch(err){
+          const code=err&&err.code;
+          if(code==='declined')return;
+          toast('Não deu para salvar por aqui — usando a impressão do navegador.');window.print();
+        }
+      }else{
+        try{
+          const url=URL.createObjectURL(blob);
+          const a=document.createElement('a');a.href=url;a.download=slug(state.header.titulo)+'.pdf';
+          document.body.appendChild(a);a.click();a.remove();
+          setTimeout(()=>URL.revokeObjectURL(url),4000);
+          toast('PDF gerado.');
+        }catch(e){
+          try{window.open(URL.createObjectURL(blob),'_blank');}catch(_){toast('Não foi possível gerar o download aqui.');}
+        }
+      }
+    }finally{
+      pdfBusy=false;const b=$('#btnDownload');if(b){b.disabled=false;b.innerHTML=label;}
+    }
+  }
+
+  /* ---------- top actions ---------- */
+  $('#btnAddSection').addEventListener('click',()=>{state.sections.push(newSection('Nova disciplina'));renderAll();});
+  $('#btnDownload').addEventListener('click',async()=>{ try{await baixarPDF();}catch(e){} try{await criarFolhaDoSimulado();}catch(e){} });
+  $('#btnPrint').addEventListener('click',()=>window.print());
+  $('#btnClear').addEventListener('click',async()=>{
+    const ok=await confirmModal('Isto apaga todas as questões, disciplinas e a capa, recomeçando do zero. Uma nova frase de transcrição será sorteada.','Limpar tudo','Limpar tudo');
+    if(ok){
+      state=defaultState();saveWarned=false;$('#notice').style.display='none';
+      document.querySelectorAll('[data-h]').forEach(inp=>{inp.value=state.header[inp.getAttribute('data-h')]||'';});
+      renderAll();toast('Recomeçado do zero.');
+    }
+  });
+
+  
+
+  // mobile tabs
+  const tabE=$('#tabEdit'),tabP=$('#tabPreview');
+  tabE.addEventListener('click',()=>{SIMROOT.classList.remove('show-preview');tabE.classList.add('on');tabP.classList.remove('on');});
+  tabP.addEventListener('click',()=>{SIMROOT.classList.add('show-preview');tabP.classList.add('on');tabE.classList.remove('on');renderPreview();});
+
+  /* ---------- init ---------- */
+
+  async function criarFolhaDoSimulado(){
+    try{
+      var secs=(state.sections||[]).map(function(s){return {nome:((s.nome||'').trim()||'Disciplina'), n:(s.questions||[]).length};}).filter(function(d){return d.n>0;});
+      if(!secs.length){ return; }
+      var total=secs.reduce(function(a,d){return a+d.n;},0);
+      if(total>150){ toast('A folha de resposta aceita no máximo ~150 questões.'); return; }
+      if(typeof loadJsPDF!=='function' || typeof fgGerar!=='function'){ return; }
+      var JsPDF=null; try{ JsPDF=await loadJsPDF(); }catch(e){}
+      if(!JsPDF){ toast('Sem internet para gerar a folha de resposta agora.'); return; }
+      var LS=(state.cover&&state.cover.logos)||[];
+      var logos=await Promise.all(LS.map(function(l){ return new Promise(function(res){ if(!l||!l.data){res(null);return;} var im=new Image(); im.onload=function(){res({dataUrl:l.data,ratio:(im.width/im.height)||1,fmt:(String(l.data).indexOf('image/png')>=0?'PNG':'JPEG')});}; im.onerror=function(){res(null);}; im.src=l.data; }); }));
+      logos=logos.filter(Boolean);
+      var cfg={ escola:(state.header&&state.header.escola)||'', titulo:(state.header&&state.header.titulo)||'', serie:(state.header&&state.header.serie)||'', nalt:5, copias:2, headerFull:true, logos:logos, campos:{turma:true,data:true,inscricao:false,professor:false}, disciplinas:secs };
+      var r=fgGerar(cfg,JsPDF,logos[0]||null);
+      var periodo=(state.header&&state.header.periodo)||''; var nomeSim=(cfg.titulo?(periodo?cfg.titulo+' - '+periodo:cfg.titulo):(periodo?'Simulado - '+periodo:'Simulado'));
+      try{ setCustomSpec(r.spec); store.custom.escola=cfg.escola; store.custom.titulo=nomeSim; saveCustom(); refreshModeloOptions(); }catch(e){}
+      var bytes=new Uint8Array(r.doc.output('arraybuffer'));
+      var fn=('folha-'+(cfg.titulo||cfg.escola||'simulado')).replace(/[^0-9A-Za-zÀ-ÿ]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase()+'.pdf';
+      await entregarArquivo(bytes,fn,'application/pdf');
+      toast('Folha de resposta criada e "Personalizado" ativado. Marque o gabarito na aba Gabarito.');
+    }catch(e){ try{toast('Nao consegui gerar a folha de resposta.');}catch(_){} }
+  }
+
+
+  const SIM_FMTV=1;
+  function buildCustomSpecFromRecipe(rec){
+    const mock=new Proxy({},{get:function(){return function(){};}});
+    const cfg={nalt:(rec.nalt||5), headerFull:true, serie:rec.serie||'', titulo:rec.titulo||'', escola:rec.escola||'', campos:{turma:true,data:true}, disciplinas:(rec.disciplinas||[]).filter(function(d){return d&&d.n>0;})};
+    return fgDrawPanel(mock, cfg, {x:0,y:0,w:210,h:297/2}, null);
+  }
+  function simGerarCodigo(){
+    if(!(store.custom && store.custom.spec && store.custom.spec.cells)){ toast('Crie o simulado + a folha primeiro (botão "Criar simulado + folha").'); return; }
+    const sp=store.custom.spec;
+    const rec={ nalt:sp.nalt||5, serie:(state.header&&state.header.serie)||'', titulo:store.custom.titulo||(state.header&&state.header.titulo)||'', escola:store.custom.escola||(state.header&&state.header.escola)||'', disciplinas:sp.discRanges.map(function(d){return {nome:d.nome,n:d.n};}) };
+    const ans=Array.isArray(store.custom.ans)?store.custom.ans.map(function(a){return a==null?null:String(a);}):[];
+    const filled=ans.filter(function(a){return a;}).length;
+    const payload={ app:'leitor-cartao', v:1, kind:'simulado', fmtv:SIM_FMTV, nome:rec.titulo||'Simulado', recipe:rec, ans:ans };
+    const out=$('#simShareOut'); out.value=JSON.stringify(payload); out.style.display='block';
+    $('#simShareCopy').style.display='';
+    if(filled===0) toast('Código gerado — mas o gabarito está vazio. Preencha na aba Gabarito e gere de novo.');
+    else toast('Código gerado ('+filled+' respostas). Copie e envie aos colegas.');
+  }
+  function simImportarCodigo(){
+    const raw=($('#simImpIn').value||'').trim(); if(!raw){ toast('Cole o código recebido primeiro.'); return; }
+    let d; try{ d=JSON.parse(raw); }catch(e){ toast('Código inválido — confira se copiou tudo.'); return; }
+    if(!d || d.app!=='leitor-cartao' || d.kind!=='simulado'){ toast('Este código não é de um simulado do Leitor.'); return; }
+    if(!d.recipe || !Array.isArray(d.recipe.disciplinas) || !d.recipe.disciplinas.length){ toast('O código não traz a folha do simulado.'); return; }
+    let spec=null; try{ spec=buildCustomSpecFromRecipe(d.recipe); }catch(e){}
+    if(!spec || !spec.cells){ toast('Não consegui reconstruir a folha deste código.'); return; }
+    const nome=d.nome||'simulado', total=spec.total;
+    try{ setCustomSpec(spec); }catch(e){ toast('Falha ao aplicar a folha.'); return; }
+    let ans=Array.isArray(d.ans)?d.ans.slice(0,total).map(function(a){return a==null?null:String(a);}):[];
+    while(ans.length<total) ans.push(null);
+    store.custom.ans=ans; store.custom.escola=(d.recipe.escola||''); store.custom.titulo=(d.recipe.titulo||nome);
+    try{ saveCustom(); refreshModeloOptions(); }catch(e){}
+    try{ setModelo('custom'); var msel=document.getElementById('modeloSel'); if(msel) msel.value='custom'; onModeloChange(); }catch(e){}
+    $('#simImpIn').value='';
+    const filled=ans.filter(function(a){return a;}).length;
+    toast('Simulado "'+nome+'" importado ('+filled+' respostas). Modelo Personalizado ativado — pode corrigir.');
+  }
+  (function(){ const g=$('#simShareGen'); if(g) g.addEventListener('click',simGerarCodigo);
+    const cp=$('#simShareCopy'); if(cp) cp.addEventListener('click',async function(){ const ta=$('#simShareOut'); if(!ta.value){toast('Gere o código primeiro.');return;} try{ await navigator.clipboard.writeText(ta.value); toast('Código copiado — cole no WhatsApp ou e-mail.'); }catch(e){ ta.focus(); ta.select(); toast('Selecione o texto e copie manualmente.'); } });
+    const im=$('#simImpDo'); if(im) im.addEventListener('click',simImportarCodigo);
+  })();
+
+  state=load();
+  renderEditor();renderPreview();
+})();
 </script>
 </body>
 </html>
