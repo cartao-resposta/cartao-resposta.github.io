@@ -383,6 +383,12 @@ tr.me td{font-weight:700}
 }
 .sim-scope .disc-header.notfirst{margin-top:14px}
 .sim-scope .q{break-inside:avoid;margin-bottom:14px}
+.sim-scope .sheet.lay-quebra .q{break-inside:auto}
+.sim-scope .sheet.lay-quebra .alt-group,.sim-scope .sheet.lay-quebra .qimg,.sim-scope .sheet.lay-quebra .en-item{break-inside:avoid}
+.sim-scope .sheet.lay-quebra .en-p{orphans:2;widows:2}
+.sim-scope .rascunho{break-inside:avoid;margin-top:6px;border:1px dashed var(--sheet-line);border-radius:6px;padding:8px 10px}
+.sim-scope .rascunho-t{font-family:var(--sans);font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--sheet-muted);margin-bottom:6px}
+.sim-scope .rascunho-area{min-height:180px;background-image:repeating-linear-gradient(var(--sheet-line) 0 1px,transparent 1px 26px);background-position:0 5px}
 .sim-scope .q .en{font-size:13.5px;line-height:1.42}
 .sim-scope .q .en .qn{font-weight:700}
 .sim-scope .q .en-p{margin:0;text-align:justify}
@@ -654,6 +660,13 @@ tr.me td{font-weight:700}
   <div class="pane pane-editor">
     <div class="notice" id="notice"></div>
 
+    <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+      <button class="btn btn-sm" id="btnClearSim" type="button">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+        Limpar simulado
+      </button>
+    </div>
+
     <div class="card">
       <div class="card-head">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>
@@ -691,6 +704,14 @@ tr.me td{font-weight:700}
         <div class="field">
           <label for="h-instr">Observação no topo das folhas de questões (opcional)</label>
           <textarea id="h-instr" data-h="instr" placeholder="Aparece só nas páginas de questões. As instruções completas ficam na capa."></textarea>
+        </div>
+        <div class="field">
+          <label for="h-layout">Diagramação das questões</label>
+          <select id="h-layout">
+            <option value="atomico">Não quebrar questões (padrão)</option>
+            <option value="quebra">Permitir quebra do texto (menos espaço em branco)</option>
+            <option value="rascunho">Não quebrar questões + rascunho no espaço livre</option>
+          </select>
         </div>
       </div>
     </div>
@@ -802,7 +823,7 @@ tr.me td{font-weight:700}
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
         <div><h2>Notas da turma</h2><div class="sub" style="margin:2px 0 0" id="statLine">Nenhum aluno corrigido ainda.</div></div>
-        <div class="rowbtns" style="flex:0 0 auto">
+        <div class="rowbtns" style="flex:0 1 auto;min-width:0">
           <button class="btn" id="boletimBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>
             Boletim (PDF)</button>
@@ -2096,7 +2117,7 @@ function renderAnalise(){
   if(anaSort==="erros") ordered.sort((a,b)=>a.pct-b.pct || a.i-b.i);
   let html='<div class="card">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'
-      +'<div><h2 style="font-size:16px">Análise por questão</h2><div class="sub" style="margin:2px 0 0">'+n+' cartão'+(n!=1?'ões':'')+' · média geral '+mediaGeral+'% de acertos</div></div>'
+      +'<div><h2 style="font-size:16px">Análise por questão</h2><div class="sub" style="margin:2px 0 0">'+n+(n!=1?' cartões':' cartão')+' · média geral '+mediaGeral+'% de acertos</div></div>'
       +'<button class="btn" id="anaSortBtn" style="padding:7px 11px;font-size:12.5px">'+(anaSort==="erros"?"Ordem das questões":"Mais erradas")+'</button>'
     +'</div>'
     +(areasHtml?'<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">'+areasHtml+'</div>':'')
@@ -2404,6 +2425,8 @@ $("#criarFolhaBtn").onclick=()=>{ if(!discRows.length) discRows=[{nome:"",n:10}]
 $("#folhaClose").onclick=()=>$("#folhaOvl").classList.add("hidden");
 $("#folhaOvl").onclick=e=>{ if(e.target===$("#folhaOvl")) $("#folhaOvl").classList.add("hidden"); };
 $("#addDisc").onclick=()=>{ discRows.push({nome:"",n:10}); renderDiscList(); };
+function loadPdfLib(){ return new Promise(res=>{ if(window.PDFLib)return res(window.PDFLib); const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'; s.onload=()=>res(window.PDFLib||null); s.onerror=()=>res(null); document.head.appendChild(s); }); }
+async function mergePDFs(buffers){ const L=await loadPdfLib(); if(!L)return null; const out=await L.PDFDocument.create(); for(const b of buffers){ const src=await L.PDFDocument.load(b); const pgs=await out.copyPages(src,src.getPageIndices()); pgs.forEach(p=>out.addPage(p)); } return await out.save(); }
 async function entregarArquivo(bytes, filename, mime){
   const file=new File([bytes],filename,{type:mime});
   try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:filename}); return true; } }catch(e){ if(e&&e.name==="AbortError") return true; }
@@ -2764,7 +2787,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
   const $=(s,r=document)=>r.querySelector(s);
   const esc=(s)=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
-  function newQuestion(){return{id:uid(),enunciado:'',alts:['','','','',''],img:null};}
+  function newQuestion(){return{id:uid(),enunciado:'',alts:['','','','',''],img:null,imgPos:'fim'};}
   function newSection(name){return{id:uid(),nome:name||'Nova disciplina',questions:[newQuestion()]};}
 
   const PHRASES=[
@@ -2808,6 +2831,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       header:{escola:'ECI Auzanir Lacerda',titulo:'Simulado de Ciências Humanas',serie:'2ª série — Ensino Médio',data:'___/___/______',
         instr:''},
       cover:defaultCover(),
+      layout:'atomico',
       sections:[newSection('História'),newSection('Geografia'),newSection('Filosofia'),newSection('Sociologia')]
     };
   }
@@ -2821,6 +2845,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       if(typeof p.cover.duration!=='string')p.cover.duration='quatro horas';
       if(typeof p.cover.enabled!=='boolean')p.cover.enabled=true;
       if(typeof p.cover.includeTranscription!=='boolean')p.cover.includeTranscription=true;
+      if(typeof p.layout!=='string')p.layout='atomico';
       return p;
     }}}catch(e){}
     return defaultState();
@@ -2898,6 +2923,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       const k=inp.getAttribute('data-h');
       if(document.activeElement!==inp)inp.value=state.header[k]||'';
     });
+    const hl=$('#h-layout'); if(hl&&document.activeElement!==hl)hl.value=state.layout||'atomico';
     const wrap=$('#sections');
     wrap.innerHTML='';
     let running=0;
@@ -2962,7 +2988,8 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
                 <img src="${q.img.data}" alt="">
                 <span class="nm">${esc(q.img.name||'imagem')}</span>
                 <button class="btn btn-sm" data-delimg="${q.id}">Remover</button>
-              </div>`:`
+              </div>
+              ${imgPosSelect(q)}`:`
               <div class="img-zone" data-imgzone="${q.id}" tabindex="0" role="button">
                 <span class="ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>
                 <span class="txt"><b>Inserir imagem</b> — clique para escolher, arraste um arquivo, ou cole (Ctrl+V) com esta área selecionada.</span>
@@ -3068,18 +3095,30 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
     while(out.length&&out[out.length-1].type==='gap')out.pop();
     return out;
   }
+  function imgPosSelect(q){
+    const P=parseEnun(q.enunciado||'').filter(b=>b.type==='p').length;
+    const cur=q.imgPos||'fim';const validP=/^p(\d+)$/.test(cur)&&parseInt(cur.slice(1),10)<P;
+    let opts=`<option value="inicio"${cur==='inicio'?' selected':''}>No início do enunciado</option>`;
+    for(let n=1;n<P;n++){opts+=`<option value="p${n}"${cur==='p'+n?' selected':''}>Após o ${n}º parágrafo</option>`;}
+    opts+=`<option value="fim"${(cur!=='inicio'&&!validP)?' selected':''}>No fim do enunciado</option>`;
+    return `<div class="field" style="margin-top:8px"><label>Posição da imagem no enunciado</label><select data-imgpos="${q.id}">${opts}</select></div>`;
+  }
   function enunHTML(q,num){
     const raw=(q.enunciado||'').trim();
-    if(!raw)return `<div class="en"><p class="en-p"><span class="qn">${num}.</span> <span class="q-empty">(questão em branco)</span></p></div>`;
-    const blocks=parseEnun(raw);let out='',numbered=false;
+    const imgH=q.img?`<div class="qimg"><img src="${q.img.data}" alt=""></div>`:'';
+    const pos=q.imgPos||'fim';let imgDone=false;
+    if(!raw){let s='<div class="en">';if(imgH&&pos==='inicio'){s+=imgH;imgDone=true;}s+=`<p class="en-p"><span class="qn">${num}.</span> <span class="q-empty">(questão em branco)</span></p>`;if(imgH&&!imgDone)s+=imgH;return s+'</div>';}
+    const blocks=parseEnun(raw);let out='',numbered=false,pcount=0;
+    if(imgH&&pos==='inicio'){out+=imgH;imgDone=true;}
     blocks.forEach(b=>{
       if(b.type==='gap'){out+=`<div class="en-gap"></div>`;return;}
-      if(b.type==='p'){const pref=numbered?'':`<span class="qn">${num}.</span> `;numbered=true;out+=`<p class="en-p">${pref}${esc(b.text)}</p>`;return;}
+      if(b.type==='p'){const pref=numbered?'':`<span class="qn">${num}.</span> `;numbered=true;out+=`<p class="en-p">${pref}${esc(b.text)}</p>`;pcount++;if(imgH&&!imgDone&&pos==='p'+pcount){out+=imgH;imgDone=true;}return;}
       if(b.type==='item'){
         if(!numbered){out+=`<p class="en-p"><span class="qn">${num}.</span></p>`;numbered=true;}
         out+=`<div class="en-item"><span class="en-mk">${esc(b.marker)}</span><span class="en-tx">${esc(b.text)}</span></div>`;
       }
     });
+    if(imgH&&!imgDone)out+=imgH;
     return `<div class="en">${out}</div>`;
   }
 
@@ -3117,7 +3156,6 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
         const alts=altsInner?`<div class="alt-group">${altsInner}</div>`:'';
         body+=`<div class="q">
           ${enunHTML(q,num)}
-          ${q.img?`<div class="qimg"><img src="${q.img.data}" alt=""></div>`:''}
           ${alts}
         </div>`;
       });
@@ -3128,7 +3166,9 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
         <div>Cole as questões no editor à esquerda.<br>A folha aparece aqui, já pronta em duas colunas.</div>
       </div></div>`;
     }
-    return `<div class="sheet">${head}<div class="columns">${body}</div></div>`;
+    const lay=state.layout||'atomico';
+    const rasc=lay==='rascunho'?`<div class="rascunho"><div class="rascunho-t">Rascunho</div><div class="rascunho-area"></div></div>`:'';
+    return `<div class="sheet lay-${lay}">${head}<div class="columns">${body}${rasc}</div></div>`;
   }
 
   function updateCoverNote(){
@@ -3260,9 +3300,16 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
 
   // file input change
   editor.addEventListener('change',(e)=>{
+    if(e.target.id==='h-layout'){state.layout=e.target.value;renderPreview();save();return;}
     const fi=e.target.closest('[data-imgfile]');
-    if(fi&&fi.files&&fi.files[0]){attachImage(fi.getAttribute('data-imgfile'),fi.files[0]);}
+    if(fi&&fi.files&&fi.files[0]){attachImage(fi.getAttribute('data-imgfile'),fi.files[0]);return;}
+    const ps=e.target.closest('[data-imgpos]');
+    if(ps){const r=findQ(ps.getAttribute('data-imgpos'));if(r){r.q.imgPos=ps.value;renderPreview();save();}return;}
   });
+  (function(){const cb=$('#btnClearSim');if(cb)cb.addEventListener('click',async()=>{
+    const ok=await confirmModal('Isto apaga o cabeçalho, a capa e todas as questões deste simulado, voltando ao estado inicial. Deseja continuar?','Limpar tudo','Limpar simulado');
+    if(ok){state=defaultState();save();renderAll();toast('Simulado limpo.');}
+  });})();
 
   // drag & drop on zones
   editor.addEventListener('dragover',(e)=>{const z=e.target.closest('.img-zone');if(z){e.preventDefault();z.classList.add('drag');}});
@@ -3464,17 +3511,24 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       if(dh>cap){dh=cap;dw=cap*(im.w/im.h);}
       return{im,dw,dh};
     }
+    function imgSplitIdx(blocks,pos){
+      if(pos==='inicio')return 0;
+      const m=/^p(\d+)$/.exec(pos||'');
+      if(m){const N=+m[1];let pc=0;for(let i=0;i<blocks.length;i++){if(blocks[i].type==='p'){pc++;if(pc===N)return i+1;}}}
+      return blocks.length;
+    }
+    function measureAlts(q,W){
+      const anyAlt=q.alts.some(a=>a.trim());let hh=anyAlt?QGAP:0;
+      doc.setFont('times','normal');doc.setFontSize(FS_ALT);
+      q.alts.forEach(a=>{if(a.trim())hh+=Math.max(1,doc.splitTextToSize(a.trim(),W-14).length)*LH_ALT;});
+      return hh;
+    }
     function measureQ(q,num,W){
       let hh=QHDR_H+renderEnun(enunBlocks(q,num),0,0,false,W);
       const d=imgDims(q,W);if(d)hh+=d.dh+8;
-      const anyAlt=q.alts.some(a=>a.trim());
-      if(anyAlt)hh+=QGAP;
-      doc.setFont('times','normal');doc.setFontSize(FS_ALT);
-      q.alts.forEach(a=>{if(a.trim())hh+=Math.max(1,doc.splitTextToSize(a.trim(),W-14).length)*LH_ALT;});
-      return hh+QGAP;
+      return hh+measureAlts(q,W)+QGAP;
     }
-    function drawQ(q,num,x,startY,W){
-      // cabeçalho da questão (estilo ENEM): "QUESTÃO NN" + barra de transição
+    function drawQHeader(num,x,startY,W){
       let yy=startY+4;
       doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(19,26,38);
       const qlabel='QUESTÃO '+num;
@@ -3483,13 +3537,11 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       doc.setLineCap('butt');
       doc.setDrawColor(15,110,86);doc.setLineWidth(2.6);doc.line(bx,barY,bx+26,barY);
       doc.setDrawColor(30,40,55);doc.setLineWidth(2.6);doc.line(bx+29,barY,x+W,barY);
-      yy=startY+QHDR_H;
-      const jf=true;
-      yy=renderEnun(enunBlocks(q,num),x,yy,true,W,jf);
-      const d=imgDims(q,W);
-      if(d){const ix=x+(W-d.dw)/2;yy+=4;try{doc.addImage(d.im.url,'PNG',ix,yy,d.dw,d.dh);}catch(e){}yy+=d.dh+4;}
-      const anyAlt=q.alts.some(a=>a.trim());
-      if(anyAlt)yy+=QGAP;
+      return startY+QHDR_H;
+    }
+    function drawImgAt(d,x,yy,W){ if(!d)return yy; const ix=x+(W-d.dw)/2;yy+=4;try{doc.addImage(d.im.url,'PNG',ix,yy,d.dw,d.dh);}catch(e){} return yy+d.dh+4; }
+    function drawAltsAt(q,x,startY,W,jf){
+      let yy=startY;const anyAlt=q.alts.some(a=>a.trim());if(anyAlt)yy+=QGAP;
       q.alts.forEach((a,i)=>{if(a.trim()){
         const lines=doc.splitTextToSize(a.trim(),W-14);
         const cy=yy+FS_ALT*0.55;
@@ -3504,7 +3556,26 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
         } else { lines.forEach((l,li)=>doc.text(l,x+13,yy+li*LH_ALT+FS_ALT*0.9)); }
         yy+=LH_ALT*lines.length;
       }});
+      return yy;
+    }
+    function drawQ(q,num,x,startY,W){
+      const jf=true;let yy=drawQHeader(num,x,startY,W);
+      const blocks=enunBlocks(q,num),d=imgDims(q,W),si=imgSplitIdx(blocks,q.imgPos||'fim');
+      yy=renderEnun(blocks.slice(0,si),x,yy,true,W,jf);
+      if(d)yy=drawImgAt(d,x,yy,W);
+      yy=renderEnun(blocks.slice(si),x,yy,true,W,jf);
+      yy=drawAltsAt(q,x,yy,W,jf);
       return yy+QGAP;
+    }
+    function drawQFlow(q,num,W){
+      const jf=true;const blocks=enunBlocks(q,num),d=imgDims(q,W),si=imgSplitIdx(blocks,q.imgPos||'fim');
+      const seq=[];blocks.slice(0,si).forEach(b=>seq.push({k:'b',b}));if(d)seq.push({k:'i'});blocks.slice(si).forEach(b=>seq.push({k:'b',b}));seq.push({k:'a'});
+      seq.forEach(u=>{ if(u.k==='b'){u.h=renderEnun([u.b],0,0,false,W);u.draw=(x,y)=>renderEnun([u.b],x,y,true,W,jf);}
+        else if(u.k==='i'){u.h=d.dh+8;u.draw=(x,y)=>drawImgAt(d,x,y,W);}
+        else {u.h=measureAlts(q,W);u.draw=(x,y)=>drawAltsAt(q,x,y,W,jf);} });
+      let first=true;
+      for(const u of seq){ const need=first?QHDR_H+u.h:u.h; const pos=placeCol(need); let y=pos.y; if(first){y=drawQHeader(num,pos.x,y,W);first=false;} u.draw(pos.x,y); }
+      colY[curCol]+=QGAP;
     }
 
     let colY=[contentTop,contentTop],curCol=0;
@@ -3517,6 +3588,15 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       const x=colX[curCol],yy=colY[curCol];colY[curCol]+=hgt;return{x,y:yy};
     }
 
+    function drawRascunho(){
+      const minGap=70;
+      for(let c=0;c<2;c++){ const top=colY[c],avail=pageBottom-top; if(avail<minGap)continue; const x=colX[c],w=colW;
+        doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(120,128,140);doc.text('RASCUNHO',x,top+8);
+        doc.setDrawColor(200,205,214);doc.setLineWidth(.6);doc.setLineDashPattern([2,2],0);doc.rect(x,top+12,w,avail-16);doc.setLineDashPattern([],0);
+        doc.setDrawColor(225,228,234);doc.setLineWidth(.4);let ly=top+34;while(ly<top+avail-8){doc.line(x+6,ly,x+w-6,ly);ly+=22;}
+        colY[c]=pageBottom; }
+    }
+    const LAY=state.layout||'atomico';
     for(const s of state.sections){
       if(!s.questions.length)continue;
       const p=placeCol(22,54);
@@ -3525,9 +3605,11 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       doc.setDrawColor(19,26,38);doc.setLineWidth(.8);doc.line(p.x,p.y+13,p.x+colW,p.y+13);
       for(const q of s.questions){
         running++;const num=String(running).padStart(2,'0');
-        const hgt=measureQ(q,num,colW);const pos=placeCol(hgt);drawQ(q,num,pos.x,pos.y,colW);
+        if(LAY==='quebra'){ drawQFlow(q,num,colW); }
+        else { const hgt=measureQ(q,num,colW);const pos=placeCol(hgt);drawQ(q,num,pos.x,pos.y,colW); }
       }
     }
+    if(LAY==='rascunho')drawRascunho();
     return doc.output('blob');
   }
 
@@ -3575,7 +3657,23 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
 
   /* ---------- top actions ---------- */
   $('#btnAddSection').addEventListener('click',()=>{state.sections.push(newSection('Nova disciplina'));renderAll();});
-  $('#btnDownload').addEventListener('click',async()=>{ try{await baixarPDF();}catch(e){} try{await criarFolhaDoSimulado();}catch(e){} });
+  $('#btnDownload').addEventListener('click',async()=>{
+    if(totalQuestions()===0){toast('Adicione ao menos uma questão antes de gerar o PDF.');return;}
+    const btn=$('#btnDownload');const label=btn?btn.innerHTML:'';if(btn){btn.disabled=true;btn.innerHTML='Gerando PDF…';}
+    try{
+      let provaBlob=null;try{provaBlob=await generatePdfBlob();}catch(e){}
+      let folhaBytes=null;try{folhaBytes=await criarFolhaDoSimulado();}catch(e){}
+      const nome=slug(state.header.titulo);
+      const provaBytes=provaBlob?new Uint8Array(await provaBlob.arrayBuffer()):null;
+      if(provaBytes&&folhaBytes){
+        let merged=null;try{merged=await mergePDFs([provaBytes,folhaBytes]);}catch(e){}
+        if(merged){ await entregarArquivo(merged,nome+'-prova-e-folha.pdf','application/pdf');toast('Prova + folha num único PDF.'); }
+        else { await entregarArquivo(provaBytes,nome+'.pdf','application/pdf');await entregarArquivo(folhaBytes,'folha-'+nome+'.pdf','application/pdf');toast('PDF pronto (dois arquivos).'); }
+      } else if(provaBytes){ await entregarArquivo(provaBytes,nome+'.pdf','application/pdf'); }
+      else if(folhaBytes){ await entregarArquivo(folhaBytes,'folha-'+nome+'.pdf','application/pdf'); }
+      else { toast('Não consegui montar o PDF — abrindo a impressão do navegador.');window.print(); }
+    } finally { if(btn){btn.disabled=false;btn.innerHTML=label;} }
+  });
   $('#btnPrint').addEventListener('click',()=>window.print());
   $('#btnClear').addEventListener('click',async()=>{
     const ok=await confirmModal('Isto apaga todas as questões, disciplinas e a capa, recomeçando do zero. Uma nova frase de transcrição será sorteada.','Limpar tudo','Limpar tudo');
@@ -3612,10 +3710,8 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       var periodo=(state.header&&state.header.periodo)||''; var nomeSim=(cfg.titulo?(periodo?cfg.titulo+' - '+periodo:cfg.titulo):(periodo?'Simulado - '+periodo:'Simulado'));
       try{ setCustomSpec(r.spec); store.custom.escola=cfg.escola; store.custom.titulo=nomeSim; saveCustom(); refreshModeloOptions(); }catch(e){}
       var bytes=new Uint8Array(r.doc.output('arraybuffer'));
-      var fn=('folha-'+(cfg.titulo||cfg.escola||'simulado')).replace(/[^0-9A-Za-zÀ-ÿ]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase()+'.pdf';
-      await entregarArquivo(bytes,fn,'application/pdf');
-      toast('Folha de resposta criada e "Personalizado" ativado. Marque o gabarito na aba Gabarito.');
-    }catch(e){ try{toast('Nao consegui gerar a folha de resposta.');}catch(_){} }
+      return bytes;
+    }catch(e){ return null; }
   }
 
 
@@ -3664,5 +3760,348 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
   renderEditor();renderPreview();
 })();
 </script>
+<!-- ============ CAMADA ESCOLA (shell integrado) — aditivo, não altera dados omr_* ============ -->
+<style id="eb-css">
+#eb-gate{position:fixed;inset:0;z-index:99999;background:var(--bg,#F5F7FA);display:none;align-items:center;justify-content:center;padding:18px;overflow:auto}
+#eb-gate .eb-card{background:var(--surface,#fff);border:1px solid var(--line,#E1E6EE);border-radius:16px;max-width:420px;width:100%;padding:22px;box-shadow:0 8px 24px rgba(20,26,34,.10)}
+.eb-brand{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.eb-dot{width:34px;height:34px;border-radius:50%;background:#0F6E56;color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700}
+.eb-h{font:600 17px/1.3 system-ui,-apple-system,sans-serif;margin:0 0 3px;color:var(--ink,#151A22)}
+.eb-sub{font:400 13px/1.5 system-ui,sans-serif;color:var(--muted,#5B6472);margin:0 0 14px}
+.eb-lbl{display:block;font:500 12px/1 system-ui,sans-serif;color:var(--muted,#5B6472);margin:13px 0 5px}
+.eb-in{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--line2,#D2D9E4);border-radius:10px;font:400 14px system-ui,sans-serif;background:var(--surface,#fff);color:var(--ink,#151A22)}
+.eb-in:focus{outline:none;border-color:#0F6E56}
+.eb-areas{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.eb-area{border:1px solid var(--line2,#D2D9E4);border-radius:10px;padding:11px 8px;font:500 13px system-ui,sans-serif;text-align:center;cursor:pointer;color:var(--ink,#151A22);user-select:none}
+.eb-area.on{border:2px solid #0F6E56;background:#E1F5EE;color:#085041}
+.eb-btn{width:100%;margin-top:16px;padding:11px;border:none;border-radius:10px;background:#0F6E56;color:#fff;font:600 14px system-ui,sans-serif;cursor:pointer}
+.eb-btn:disabled{opacity:.5;cursor:default}
+.eb-err{color:#E23D4B;font:400 13px system-ui,sans-serif;margin-top:10px;min-height:0}
+.eb-note{font:400 12px/1.5 system-ui,sans-serif;color:var(--muted,#5B6472);margin-top:14px}
+#eb-fab{position:fixed;right:14px;bottom:14px;z-index:9000;background:#0F6E56;color:#fff;border:none;border-radius:999px;padding:11px 16px;font:600 13px system-ui,sans-serif;box-shadow:0 6px 18px rgba(15,110,86,.35);cursor:pointer;display:none}
+#eb-panel{position:fixed;inset:0;z-index:9500;background:rgba(10,14,20,.45);display:none;align-items:flex-end;justify-content:center}
+#eb-panel .eb-sheet{background:var(--bg,#F5F7FA);width:100%;max-width:620px;max-height:88vh;overflow:auto;border-radius:16px 16px 0 0;padding:18px}
+.eb-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.eb-tabs{display:flex;gap:6px;margin:14px 0}
+.eb-tab{flex:1;text-align:center;padding:8px 4px;border:1px solid var(--line,#E1E6EE);border-radius:10px;font:500 12px system-ui,sans-serif;background:var(--surface,#fff);cursor:pointer;color:var(--muted,#5B6472)}
+.eb-tab.on{background:#0F6E56;color:#fff;border-color:#0F6E56}
+.eb-card2{background:var(--surface,#fff);border:1px solid var(--line,#E1E6EE);border-radius:12px;padding:14px;margin-bottom:10px}
+.eb-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line,#E1E6EE);font:400 13px system-ui,sans-serif;color:var(--ink,#151A22)}
+.eb-item:first-child{border-top:none}
+.eb-mini{border:1px solid #0F6E56;background:var(--surface,#fff);border-radius:8px;padding:6px 11px;font:600 12px system-ui,sans-serif;cursor:pointer;color:#0F6E56;white-space:nowrap}
+.eb-mini.solid{background:#0F6E56;color:#fff}
+.eb-pill{display:inline-block;font:600 11px system-ui,sans-serif;color:#085041;background:#E1F5EE;padding:2px 8px;border-radius:20px}
+.eb-x{background:none;border:none;font-size:24px;color:var(--muted,#5B6472);cursor:pointer;line-height:1;padding:0 4px}
+.eb-muted{font:400 12px/1.5 system-ui,sans-serif;color:var(--muted,#5B6472)}
+.eb-tt{font:600 14px system-ui,sans-serif;color:var(--ink,#151A22);margin:0 0 8px}
+</style>
+
+<div id="eb-gate" aria-hidden="false" role="dialog" aria-label="Entrar na escola">
+  <div class="eb-card">
+    <div class="eb-brand"><div class="eb-dot">✓</div><div class="eb-h" style="margin:0">Leitor de Cartão-Resposta</div></div>
+    <div id="eb-step-login">
+      <div class="eb-h">Entrar na sua escola</div>
+      <div class="eb-sub">Use seu nome, sua matrícula e o código da escola.</div>
+      <label class="eb-lbl">Nome completo</label>
+      <input class="eb-in" id="eb-nome" autocomplete="name" placeholder="Seu nome">
+      <label class="eb-lbl">Matrícula funcional</label>
+      <input class="eb-in" id="eb-mat" placeholder="Sua matrícula" inputmode="numeric">
+      <label class="eb-lbl">Código da escola</label>
+      <input class="eb-in" id="eb-cod" placeholder="ex.: AUZ-2026" autocapitalize="characters" style="text-transform:uppercase">
+      <label class="eb-lbl">Nome da escola <span style="font-weight:400;text-transform:none">(só se você for o primeiro a entrar)</span></label>
+      <input class="eb-in" id="eb-nomeesc" placeholder="ex.: ECI Auzanir Lacerda">
+      <button class="eb-btn" id="eb-next">Continuar</button>
+      <div class="eb-err" id="eb-err1"></div>
+      <div class="eb-note">Ambiente de teste: os dados ficam restritos a quem tem este link. As notas dos alunos não saem do seu aparelho.</div>
+      <div style="text-align:center;margin-top:10px"><button id="eb-skip" type="button" style="background:none;border:none;color:#0F6E56;font:600 13px system-ui,sans-serif;cursor:pointer">Continuar sem entrar</button></div>
+    </div>
+    <div id="eb-step-area" style="display:none">
+      <div class="eb-h">Onde você atua?</div>
+      <div class="eb-sub">Escolha sua área — é ela que define seu núcleo.</div>
+      <div class="eb-areas" id="eb-arealist"></div>
+      <button class="eb-btn" id="eb-enter" disabled>Entrar no núcleo</button>
+      <div class="eb-err" id="eb-err2"></div>
+    </div>
+  </div>
+</div>
+
+<button id="eb-fab" type="button">Escola</button>
+<div id="eb-panel"><div class="eb-sheet" id="eb-sheet"></div></div>
+
+<script id="eb-js">
+(function(){
+  "use strict";
+  var AREAS=["Linguagens","Ciências Humanas","Ciências da Natureza","Matemática"];
+  var FBCONFIG={apiKey:"AIzaSyC7CYEABKqo0dn42ugSih892H_5bzflGf0",authDomain:"leitor-cartao-7ffea.firebaseapp.com",projectId:"leitor-cartao-7ffea",storageBucket:"leitor-cartao-7ffea.firebasestorage.app",messagingSenderId:"633986653452",appId:"1:633986653452:web:03ca7e3c56497416babd29"};
+  var LK_PERFIL="escola_perfil";
+  function $(id){return document.getElementById(id);}
+  function esc(s){var d=document.createElement("div");d.textContent=(s==null?"":String(s));return d.innerHTML;}
+  function readLS(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  function writeLS(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+  /* ---------- Adaptador de sincronização: db do Claude agora, Firebase depois ---------- */
+  var B={
+    mode:"local", db:null, user:null, uid:null, admin:false, ready:false, kind:null,
+    init:async function(){
+      try{
+        if(window.claude&&window.claude.use){
+          var db=await window.claude.use("db");
+          var user=await window.claude.use("user");
+          if(db&&user){
+            this.db=db; this.user=user; this.kind="claude";
+            try{ this.uid=await user.id(); }catch(e){ this.uid=null; }
+            try{ this.admin=!!(user.isOwner&&user.isOwner()); }catch(e){ this.admin=false; }
+            if(this.uid) this.mode="cloud";
+          }
+        }
+        if(this.mode!=="cloud"){ if(await this._initFirebase()) this.mode="cloud"; }
+      }catch(e){}
+      this.ready=true;
+      return this.mode;
+    },
+    _loadFB:function(){
+      return new Promise(function(res){
+        if(window.firebase&&window.firebase.firestore) return res();
+        setTimeout(res,8000);
+        var srcs=["https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js",
+                  "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js",
+                  "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"];
+        var i=0; (function next(){ if(i>=srcs.length) return res(); var s=document.createElement("script"); s.src=srcs[i++]; s.onload=next; s.onerror=function(){res();}; document.head.appendChild(s); })();
+      });
+    },
+    _initFirebase:async function(){
+      try{
+        await this._loadFB();
+        if(!window.firebase||!window.firebase.initializeApp) return false;
+        if(!firebase.apps.length) firebase.initializeApp(FBCONFIG);
+        this.db=firebase.firestore(); this.kind="firebase";
+        var auth=firebase.auth();
+        var uid=await new Promise(function(res){
+          var done=false, unsub=auth.onAuthStateChanged(function(u){ if(u&&!done){done=true;try{unsub();}catch(e){} res(u.uid);} });
+          auth.signInAnonymously().catch(function(){ if(!done){done=true; res(null);} });
+        });
+        this.uid=uid; this.admin=false;
+        return !!uid;
+      }catch(e){ return false; }
+    },
+    base:function(cod){return "escolas/"+cod;},
+    perfilRef:function(){return this.db.doc(this.kind==="firebase"?"usuarios/"+this.uid:"data/users/"+this.uid+"/perfil");},
+    getPerfil:async function(){
+      if(this.mode==="cloud"){try{var s=await this.perfilRef().get();return s.exists?s.data():null;}catch(e){}}
+      return readLS(LK_PERFIL,null);
+    },
+    setPerfil:async function(p){
+      writeLS(LK_PERFIL,p);
+      if(this.mode==="cloud"){try{await this.perfilRef().set(p);}catch(e){}}
+    },
+    entrar:async function(p,nomeEsc){
+      await this.setPerfil(p);
+      if(this.mode==="cloud"){
+        try{
+          var esc=this.db.doc(this.base(p.cod)); var snap=await esc.get();
+          if(!snap.exists){ await esc.set({nome:nomeEsc||p.cod,criadaPor:this.uid,em:Date.now()}); this.admin=true; }
+          else if(this.kind==="firebase"){ var dd=snap.data()||{}; this.admin=(dd.criadaPor===this.uid); }
+          await this.db.doc(this.base(p.cod)+"/professores/"+this.uid).set({nome:p.nome,mat:p.mat,areas:p.areas,em:Date.now()});
+        }catch(e){}
+      }
+    },
+    escola:async function(cod){
+      if(this.mode==="cloud"){try{var s=await this.db.doc(this.base(cod)).get();var dta=s.exists?s.data():null;if(dta&&this.kind==="firebase")this.admin=(dta.criadaPor===this.uid);return dta||{nome:cod};}catch(e){}}
+      return {nome:cod};
+    },
+    subProfs:function(cod,cb){
+      if(this.mode==="cloud"){try{return this.db.collection(this.base(cod)+"/professores").onSnapshot(function(q){cb(q.docs.map(function(d){return d.data();}));},function(){});}catch(e){}}
+      var me=readLS(LK_PERFIL,null); cb(me?[{nome:me.nome,mat:me.mat,areas:me.areas}]:[]); return function(){};
+    },
+    turmasRef:function(cod){return this.db.doc(this.base(cod)+"/compartilhado/turmas");},
+    subTurmas:function(cod,cb){
+      if(this.mode==="cloud"){try{return this.turmasRef(cod).onSnapshot(function(s){cb(s.exists?s.data():null);},function(){});}catch(e){}}
+      cb(readLS("escola_turmas_local",null)); return function(){};
+    },
+    publicarTurmas:async function(cod,roster,nome){
+      var payload={roster:roster,por:this.uid||"local",nome:nome||"",em:Date.now()};
+      if(this.mode==="cloud"){try{await this.turmasRef(cod).set(payload);return true;}catch(e){return false;}}
+      writeLS("escola_turmas_local",payload); return true;
+    },
+    subGab:function(cod,cb){
+      if(this.mode==="cloud"){try{return this.db.collection(this.base(cod)+"/gabaritos").onSnapshot(function(q){cb(q.docs.map(function(d){var o=d.data()||{};o.__id=d.id;return o;}));},function(){});}catch(e){}}
+      cb(readLS("escola_gab_local",[])); return function(){};
+    },
+    publicarGab:async function(cod,g){
+      var id="g"+Date.now()+Math.floor(Math.random()*1000);
+      if(this.mode==="cloud"){try{await this.db.doc(this.base(cod)+"/gabaritos/"+id).set(g);return true;}catch(e){return false;}}
+      var arr=readLS("escola_gab_local",[]); g.__id=id; arr.push(g); writeLS("escola_gab_local",arr); return true;
+    }
+  };
+
+  /* ---------- Estado do shell ---------- */
+  var perfil=null, selAreas=[], profs=[], turmasDoc=null, gabs=[], tab="turmas", unsub=[];
+  function stop(){unsub.forEach(function(u){try{u();}catch(e){}});unsub=[];}
+
+  /* ---------- Gate (login + área) ---------- */
+  function renderAreas(){
+    var box=$("eb-arealist"); box.innerHTML="";
+    AREAS.forEach(function(a){
+      var d=document.createElement("div"); d.className="eb-area"+(selAreas.indexOf(a)>=0?" on":""); d.textContent=a;
+      d.onclick=function(){
+        var i=selAreas.indexOf(a); if(i>=0)selAreas.splice(i,1); else selAreas.push(a);
+        renderAreas(); $("eb-enter").disabled=selAreas.length===0;
+      };
+      box.appendChild(d);
+    });
+  }
+  function showApp(){ $("eb-gate").style.display="none"; $("eb-fab").style.display="block"; }
+  function subscribeAll(){
+    stop();
+    unsub.push(B.subProfs(perfil.cod,function(list){profs=list||[];if($("eb-panel").style.display==="flex"&&tab==="nucleos")renderSheet();}));
+    unsub.push(B.subTurmas(perfil.cod,function(d){turmasDoc=d;if($("eb-panel").style.display==="flex"&&tab==="turmas")renderSheet();}));
+    unsub.push(B.subGab(perfil.cod,function(list){gabs=list||[];if($("eb-panel").style.display==="flex"&&tab==="gabaritos")renderSheet();}));
+  }
+
+  $("eb-next").onclick=function(){
+    var nome=$("eb-nome").value.trim(), mat=$("eb-mat").value.trim(), cod=$("eb-cod").value.trim().toUpperCase();
+    var e=$("eb-err1");
+    if(!nome||!mat||!cod){ e.textContent="Preencha nome, matrícula e código da escola."; return; }
+    e.textContent="";
+    window._ebPending={nome:nome,mat:mat,cod:cod,nomeEsc:$("eb-nomeesc").value.trim()};
+    $("eb-step-login").style.display="none"; $("eb-step-area").style.display="block";
+  };
+  $("eb-enter").onclick=async function(){
+    if(selAreas.length===0)return;
+    var btn=this; btn.disabled=true; btn.textContent="Entrando…";
+    var p={nome:window._ebPending.nome,mat:window._ebPending.mat,cod:window._ebPending.cod,areas:selAreas.slice()};
+    if(!B.ready) await B.init();
+    await B.entrar(p,window._ebPending.nomeEsc);
+    perfil=await B.getPerfil()||p;
+    try{ var e0=await B.escola(perfil.cod); if(e0&&e0.nome) perfil.__escolaNome=e0.nome; }catch(e){}
+    subscribeAll(); showApp();
+    btn.disabled=false; btn.textContent="Entrar no núcleo";
+  };
+
+  /* ---------- Painel Ambiente ---------- */
+  function nucleoDeProfs(area){return profs.filter(function(p){return (p.areas||[]).indexOf(area)>=0;});}
+  function currentRoster(){return readLS("omr_roster",{})||{};}
+  function currentKey(){return readLS("omr_key",null);}
+
+  function renderSheet(){
+    var s=$("eb-sheet");
+    var esc0=perfil.__escolaNome||perfil.cod;
+    var head='<div class="eb-row"><div><div class="eb-tt" style="margin:0">'+esc(esc0)+'</div>'
+      +'<div class="eb-muted">'+esc(perfil.nome)+' · '+esc((perfil.areas||[]).join(", "))
+      +(B.admin?' · <span class="eb-pill">Admin</span>':'')
+      +(B.mode!=="cloud"?' · <span class="eb-pill" style="background:#FBF0DC;color:#8a5a12">modo local</span>':'')
+      +'</div></div><button class="eb-x" id="eb-close" aria-label="Fechar">×</button></div>';
+    var tabs='<div class="eb-tabs">'
+      +tabBtn("turmas","Turmas")+tabBtn("gabaritos","Gabaritos")+tabBtn("nucleos","Núcleos")+tabBtn("boletim","Boletim")
+      +'</div>';
+    s.innerHTML=head+tabs+'<div id="eb-body"></div>';
+    $("eb-close").onclick=closePanel;
+    Array.prototype.forEach.call(s.querySelectorAll(".eb-tab"),function(t){t.onclick=function(){tab=t.getAttribute("data-t");renderSheet();};});
+    var body=$("eb-body");
+    if(tab==="turmas") body.innerHTML=viewTurmas(), bindTurmas();
+    else if(tab==="gabaritos") body.innerHTML=viewGab(), bindGab();
+    else if(tab==="nucleos") body.innerHTML=viewNucleos();
+    else body.innerHTML=viewBoletim();
+  }
+  function tabBtn(id,label){return '<div class="eb-tab'+(tab===id?" on":"")+'" data-t="'+id+'">'+label+'</div>';}
+
+  function viewTurmas(){
+    var r=currentRoster(); var minhas=Object.keys(r).filter(function(k){return (r[k].al||[]).length>0;});
+    var h='<div class="eb-card2"><div class="eb-tt">Turmas da escola (compartilhadas)</div>';
+    if(turmasDoc&&turmasDoc.roster){
+      var ks=Object.keys(turmasDoc.roster).filter(function(k){return (turmasDoc.roster[k].al||[]).length>0;});
+      if(ks.length){
+        ks.forEach(function(k){var t=turmasDoc.roster[k];h+='<div class="eb-item"><span>'+esc(t.n||k)+' <span class="eb-muted">· '+(t.al||[]).length+' aluno(s)</span></span></div>';});
+        h+='<div class="eb-muted" style="margin-top:8px">Publicadas por '+esc(turmasDoc.nome||"—")+'.</div>';
+        h+='<button class="eb-mini solid" id="eb-aplicar-turmas" style="margin-top:12px">Aplicar estas turmas no meu app</button>';
+      } else h+='<div class="eb-muted">Ainda sem turmas com alunos compartilhadas.</div>';
+    } else h+='<div class="eb-muted">Ninguém publicou as turmas da escola ainda.</div>';
+    h+='</div>';
+    h+='<div class="eb-card2"><div class="eb-tt">Publicar minhas turmas</div>'
+      +'<div class="eb-muted">Envia as turmas e alunos que você já cadastrou ('+minhas.length+' com alunos) para a escola. As notas não vão junto.</div>'
+      +'<button class="eb-mini" id="eb-pub-turmas" style="margin-top:12px"'+(minhas.length?'':' disabled')+'>Publicar minhas turmas atuais</button></div>';
+    return h;
+  }
+  function bindTurmas(){
+    var a=$("eb-aplicar-turmas"); if(a)a.onclick=function(){
+      if(!turmasDoc||!turmasDoc.roster)return;
+      if(!confirm("Isto substitui as turmas e alunos do seu app pelas turmas da escola. Suas notas já lançadas são mantidas. Continuar?"))return;
+      writeLS("omr_roster",turmasDoc.roster); location.reload();
+    };
+    var p=$("eb-pub-turmas"); if(p)p.onclick=async function(){
+      p.disabled=true;p.textContent="Publicando…";
+      var ok=await B.publicarTurmas(perfil.cod,currentRoster(),perfil.nome);
+      p.textContent=ok?"Publicado ✓":"Não deu — tente de novo"; setTimeout(function(){p.disabled=false;p.textContent="Publicar minhas turmas atuais";},1600);
+    };
+  }
+
+  function viewGab(){
+    var minha=perfil.areas&&perfil.areas[0]?perfil.areas[0]:"—";
+    var h='<div class="eb-card2"><div class="eb-tt">Gabaritos compartilhados</div>';
+    if(gabs.length){
+      gabs.slice().sort(function(a,b){return (b.em||0)-(a.em||0);}).forEach(function(g,i){
+        h+='<div class="eb-item"><span>'+esc(g.titulo||"Gabarito")+' <span class="eb-muted">· '+esc(g.nucleo||"")+' · '+esc(g.nome||"")+'</span></span>'
+          +'<button class="eb-mini" data-ap="'+i+'">Aplicar</button></div>';
+      });
+    } else h+='<div class="eb-muted">Nenhum gabarito publicado no ambiente ainda.</div>';
+    h+='</div>';
+    h+='<div class="eb-card2"><div class="eb-tt">Publicar meu gabarito atual</div>'
+      +'<div class="eb-muted">Envia o gabarito ativo do app para o núcleo <b>'+esc(minha)+'</b>. Os colegas corrigem com ele no próprio celular.</div>'
+      +'<button class="eb-mini" id="eb-pub-gab" style="margin-top:12px"'+(currentKey()?'':' disabled')+'>Publicar gabarito atual</button></div>';
+    return h;
+  }
+  function bindGab(){
+    var sorted=gabs.slice().sort(function(a,b){return (b.em||0)-(a.em||0);});
+    Array.prototype.forEach.call(document.querySelectorAll("[data-ap]"),function(btn){
+      btn.onclick=function(){
+        var g=sorted[+btn.getAttribute("data-ap")]; if(!g||!g.key)return;
+        if(!confirm('Aplicar o gabarito "'+(g.titulo||"")+'" como gabarito ativo do app? O gabarito atual será substituído.'))return;
+        writeLS("omr_key",g.key); location.reload();
+      };
+    });
+    var p=$("eb-pub-gab"); if(p)p.onclick=async function(){
+      var key=currentKey(); if(!key)return;
+      var titulo=prompt("Nome deste gabarito (ex.: Simulado 1 — Humanas):",""); if(titulo===null)return;
+      p.disabled=true;p.textContent="Publicando…";
+      var ok=await B.publicarGab(perfil.cod,{titulo:titulo||"Gabarito",nucleo:(perfil.areas||[])[0]||"",key:key,por:B.uid||"local",nome:perfil.nome,em:Date.now()});
+      p.textContent=ok?"Publicado ✓":"Não deu — tente de novo"; setTimeout(function(){p.disabled=false;p.textContent="Publicar gabarito atual";},1600);
+    };
+  }
+
+  function viewNucleos(){
+    var h="";
+    AREAS.forEach(function(a){
+      var membros=nucleoDeProfs(a);
+      h+='<div class="eb-card2"><div class="eb-row" style="margin:0"><div class="eb-tt" style="margin:0">'+esc(a)+'</div><span class="eb-muted">'+membros.length+' professor(es)</span></div>';
+      if(membros.length) membros.forEach(function(m){h+='<div class="eb-item"><span>'+esc(m.nome||"—")+'</span><span class="eb-muted">'+esc(m.mat||"")+'</span></div>';});
+      else h+='<div class="eb-muted" style="margin-top:6px">Ninguém neste núcleo ainda.</div>';
+      h+='</div>';
+    });
+    return h;
+  }
+
+  function viewBoletim(){
+    var res=readLS("omr_res",[])||[];
+    return '<div class="eb-card2"><div class="eb-tt">Boletim</div>'
+      +'<div class="eb-muted">O boletim consolidado por área (somando os núcleos) entra na próxima etapa. As notas continuam no seu aparelho — por enquanto, você tem <b>'+res.length+'</b> correção(ões) salva(s) localmente. Nada disso é enviado para a nuvem.</div></div>';
+  }
+
+  function openPanel(){ if(!perfil){ $("eb-gate").style.display="flex"; $("eb-step-login").style.display="block"; $("eb-step-area").style.display="none"; return; } renderSheet(); $("eb-panel").style.display="flex"; }
+  function closePanel(){ $("eb-panel").style.display="none"; }
+  $("eb-fab").onclick=openPanel;
+  $("eb-skip").onclick=function(){ showApp(); };
+  $("eb-panel").onclick=function(ev){ if(ev.target===$("eb-panel")) closePanel(); };
+
+  /* ---------- Boot ---------- */
+  renderAreas();
+  (async function(){
+    var cached=readLS(LK_PERFIL,null); var skip=readLS("escola_skip",null);
+    if(cached){ perfil=cached; showApp(); await B.init(); perfil=await B.getPerfil()||cached; if(perfil){ if(!perfil.__escolaNome){var e=await B.escola(perfil.cod); perfil.__escolaNome=e.nome;} subscribeAll(); } }
+    else { showApp(); B.init(); }
+  })();
+})();
+</script>
+<!-- ============ FIM CAMADA ESCOLA ============ -->
+
 </body>
 </html>
