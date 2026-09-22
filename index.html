@@ -1409,8 +1409,8 @@ $("#impResFile").onchange=(e)=>{ const files=[...(e.target.files||[])]; if(!file
 function csvCell(v){ v=(v==null?"":String(v)); return /[",\r\n]/.test(v)? '"'+v.replace(/"/g,'""')+'"' : v; }
 function modeloLabel(m){ return ({m1:"Modelo 01",m2d1:"ENEM 1º dia",m2d2:"ENEM 2º dia",custom:"Personalizado"})[m]||m; }
 function exportDashCSV(){
-  const list=ordenarPorTurmaNome(resDoModelo());
-  if(!list.length){ toast("Não há correções deste simulado para exportar."); return; }
+  const list=ordenarPorTurmaNome(filteredRes());
+  if(!list.length){ toast("Não há correções para exportar (confira o filtro \"Ver notas de\")."); return; }
   const kind=mKind(); const meta=[]; const L=["A","B","C","D","E"];
   if(kind==="m1"){
     for(let i=0;i<NQ;i++){ if(!isActive(i))continue; const c=(i/NROW)|0; meta.push({q:i,qn:i+1,disc:store.key.disc[c]||("Disciplina "+(c+1)),correct:store.key.ans[i]}); }
