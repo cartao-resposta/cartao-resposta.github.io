@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Leitor de Cartão-Resposta</title>
+<title>Aferí</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Leitor">
 <meta name="theme-color" content="#0F6E56">
 <link rel="icon" href="./favicon-64.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F5F7F6'/%3E%3Crect x='13' y='13' width='4.2' height='12' rx='2.1' fill='%2316241E'/%3E%3Ccircle cx='20.5' cy='9.5' r='3.3' fill='%230F6E56'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./manifest.webmanifest">
 
@@ -49,7 +50,7 @@ button{font-family:inherit;cursor:pointer}
 header{position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top);background:color-mix(in srgb,var(--bg) 88%,transparent);
   backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .hbar{display:flex;align-items:center;gap:10px;padding:12px 0}
-.logo{width:32px;height:32px;border-radius:9px;background:var(--primary);color:var(--primary-ink);
+.logo{width:32px;height:32px;border-radius:9px;background:transparent;color:var(--ink);
   display:grid;place-items:center;flex:0 0 auto}
 .logo svg{width:19px;height:19px}
 .htitle{font-size:16px;font-weight:600;line-height:1.15}
@@ -174,11 +175,17 @@ tr.me td{font-weight:700}
 .qdist .cell.key{background:var(--ok-soft);color:var(--ok)}
 .qdist .cell.most{outline:1.5px solid var(--bad)}
 /* splash */
-#splash{position:fixed;inset:0;z-index:1000;background:var(--primary);display:flex;flex-direction:column;
+#splash{position:fixed;inset:0;z-index:1000;background:#F5F7F6;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #splash.gone{opacity:0;pointer-events:none}
-.splash-name{color:#fff;font-family:"Space Grotesk";font-size:21px;font-weight:600;letter-spacing:-.01em}
-.splash-sub{color:rgba(255,255,255,.75);font-size:12.5px;margin-top:-8px}
+.splash-name{color:#16241E;font-family:"Space Grotesk";font-size:21px;font-weight:600;letter-spacing:-.01em}
+.splash-sub{color:#6B7280;font-size:12.5px;margin-top:-8px}
+.sp-mark{position:relative;width:120px;height:112px;margin-bottom:6px}
+.sp-i{position:absolute;left:47px;bottom:8px;width:26px;height:66px;border-radius:13px;background:#16241E}
+.sp-bubble{position:absolute;left:74px;top:0;width:40px;height:40px;border-radius:50%;background:#0F6E56;animation:spDrop .8s cubic-bezier(.34,1.56,.64,1) .15s both}
+@keyframes spDrop{0%{transform:translateY(-66px);opacity:0}55%{opacity:1}100%{transform:translateY(0);opacity:1}}
+#splash .splash-name{animation:spFade .5s ease .5s both}
+@keyframes spFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 /* overlays (tutorial / info) */
 .ovl{position:fixed;inset:0;z-index:900;background:rgba(6,20,16,.55);display:flex;align-items:center;
   justify-content:center;padding:18px}
@@ -518,8 +525,8 @@ tr.me td{font-weight:700}
 </head>
 <body>
 <header><div class="wrap hbar">
-  <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h4M4 4v4M20 4h-4M20 4v4M4 20h4M4 20v-4M20 20h-4M20 20v-4"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></div>
-  <div><div class="htitle">Leitor de Cartão<small>Correção por foto · A–E</small></div></div>
+  <div class="logo"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9.5" width="3.4" height="11" rx="1.7" fill="currentColor"/><circle cx="15.2" cy="7" r="2.7" fill="#0F6E56"/></svg></div>
+  <div><div class="htitle">Aferí<small>Correção por foto · A–E</small></div></div>
   <button class="iconbtn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema"></button>
 </div></header>
 
@@ -924,20 +931,17 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 22set-c</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 22set-e</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <div id="splash">
-  <svg width="86" height="86" viewBox="0 0 86 86" fill="none" aria-hidden="true">
-    <circle cx="43" cy="43" r="33" stroke="#fff" stroke-width="9"/>
-    <path d="M29 44l10 11 19-23" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <div class="splash-name">Leitor de Cartão</div>
+  <div class="sp-mark" aria-hidden="true"><div class="sp-i"></div><div class="sp-bubble"></div></div>
+  <div class="splash-name">Aferí</div>
   <div class="splash-sub">Correção por foto</div>
 </div>
-<script>setTimeout(function(){var s=document.getElementById('splash');if(s){s.style.transition='opacity .45s ease';s.style.opacity='0';setTimeout(function(){if(s&&s.parentNode)s.remove();},520);}},850);</script>
+<script>setTimeout(function(){var s=document.getElementById('splash');if(s){s.style.transition='opacity .45s ease';s.style.opacity='0';setTimeout(function(){if(s&&s.parentNode)s.remove();},520);}},1300);</script>
 
 <div id="folhaOvl" class="ovl hidden">
   <div class="ovl-card">
@@ -976,7 +980,7 @@ tr.me td{font-weight:700}
 
 <div id="tutorial" class="ovl hidden">
   <div class="ovl-card">
-    <h2>Bem-vindo ao Leitor de Cartão</h2>
+    <h2>Bem-vindo ao Aferí</h2>
     <div class="sub">Corrigir provas por foto, em 3 passos:</div>
     <ol>
       <li><b>Monte o gabarito</b> na aba <b>Gabarito</b> — marque a resposta certa de cada questão. Escolha o cartão (Modelo 01 ou ENEM) lá no topo.</li>
@@ -1349,7 +1353,7 @@ $("#expCopy").onclick=async()=>{
 $("#impDo").onclick=()=>{
   const raw=$("#impIn").value.trim(); if(!raw){toast("Cole o código recebido primeiro.");return;}
   let d; try{ d=JSON.parse(raw); }catch(e){ toast("Código inválido — confira se copiou tudo."); return; }
-  if(!d||d.app!=="leitor-cartao"){ toast("Este código não é do Leitor de Cartão."); return; }
+  if(!d||d.app!=="leitor-cartao"){ toast("Este código não é do Aferí."); return; }
   const temTurmas=d.roster&&typeof d.roster==="object";
   const temGab=d.key&&Array.isArray(d.key.ans);
   if(!temTurmas&&!temGab){ toast("O código não traz turmas nem gabarito."); return; }
@@ -2673,7 +2677,7 @@ function blDrawPDF(JsPDF, data){
   function drawFoot(){
     const y=PH-12; setDraw(LINE); doc.setLineWidth(0.2); doc.line(ML,y,PW-MR,y);
     doc.setFont("helvetica","normal"); doc.setFontSize(7.5); setText(MUTE);
-    doc.text("Leitor de Cartão-Resposta", ML, y+4);
+    doc.text("Aferí", ML, y+4);
     doc.text("Gerado em "+data.data, PW-MR, y+4, {align:"right"});
   }
   function drawSigns(){
@@ -4012,7 +4016,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
 
 <div id="eb-gate" aria-hidden="false" role="dialog" aria-label="Entrar na escola">
   <div class="eb-card">
-    <div class="eb-brand"><div class="eb-dot">✓</div><div class="eb-h" style="margin:0">Leitor de Cartão-Resposta</div></div>
+    <div class="eb-brand"><div class="eb-dot">✓</div><div class="eb-h" style="margin:0">Aferí</div></div>
     <div id="eb-step-login">
       <div class="eb-h">Entrar na sua escola</div>
       <div class="eb-sub">Use seu nome, sua matrícula e o código da escola.</div>

@@ -1,16 +1,31 @@
 {
-  "name": "Leitor de Cartão-Resposta",
-  "short_name": "Leitor",
-  "description": "Correção de cartões-resposta por foto do celular",
-  "lang": "pt-BR",
+  "name": "Aferí",
+  "short_name": "Aferí",
+  "description": "Correção de cartão-resposta por foto",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F1FAF6",
+  "background_color": "#F5F7F6",
   "theme_color": "#0F6E56",
   "icons": [
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
