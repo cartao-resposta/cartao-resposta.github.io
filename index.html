@@ -924,8 +924,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="footnote">Calibrado para o cartão de até 40 questões · 4 disciplinas · A–E · Roll No de 2 dígitos.</div>
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 22set-c</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1428,7 +1427,9 @@ function exportDashCSV(){
       lines.push([aluno,turma,mat,simulado,prof,data,m.disc,m.qn,toL(mk),toL(m.correct),ac].map(csvCell).join(",")); });
   });
   const bytes=new TextEncoder().encode("\uFEFF"+lines.join("\r\n"));
-  entregarArquivo(bytes,"dashboard-"+MODELO+".csv","text/csv").catch(()=>toast("Não consegui baixar o CSV."));
+  const fsel=$("#filtroNotas");
+  const escopo=(fsel&&fsel.value)? fsel.options[fsel.selectedIndex].textContent.replace(/[^0-9A-Za-zÀ-ÿ]+/g,"") : "todas";
+  entregarArquivo(bytes,"dashboard-"+MODELO+"-"+escopo+".csv","text/csv").catch(()=>toast("Não consegui baixar o CSV."));
 }
 $("#dashBtn").onclick=exportDashCSV;
 
