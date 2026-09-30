@@ -2565,7 +2565,8 @@ function loadPdfLib(){ return new Promise(res=>{ if(window.PDFLib)return res(win
 async function mergePDFs(buffers){ const L=await loadPdfLib(); if(!L)return null; const out=await L.PDFDocument.create(); for(const b of buffers){ const src=await L.PDFDocument.load(b); const pgs=await out.copyPages(src,src.getPageIndices()); pgs.forEach(p=>out.addPage(p)); } return await out.save(); }
 async function entregarArquivo(bytes, filename, mime){
   const file=new File([bytes],filename,{type:mime});
-  try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:filename}); return true; } }catch(e){ if(e&&e.name==="AbortError") return true; }
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||"");
+  if(isMobile){ try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:filename}); return true; } }catch(e){ if(e&&e.name==="AbortError") return true; } }
   try{ if(window.claude&&window.claude.use){ const dl=await window.claude.use("downloads"); if(dl){ try{ await dl.save({filename,data:bytes}); return true; }catch(err){ if(err&&err.code==="declined") return true; } } } }catch(e){}
   try{ const blob=new Blob([bytes],{type:mime}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1500); return true; }catch(e){}
   return false;
