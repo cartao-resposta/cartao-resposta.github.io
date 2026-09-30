@@ -662,6 +662,10 @@ tr.me td{font-weight:700}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
       Criar simulado + folha
     </button>
+    <button class="btn" id="btnDownloadWord">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8 13l1.5 5L11 15l1.5 3L14 13"/></svg>
+      Prova em Word (editável)
+    </button>
   </div>
 </header>
 
@@ -3953,6 +3957,105 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       return bytes;
     }catch(e){ return null; }
   }
+
+  function loadDocxLib(){ return new Promise(res=>{ if(window.docx&&window.docx.Document) return res(window.docx); const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js'; s.onload=()=>res(window.docx||null); s.onerror=()=>res(null); document.head.appendChild(s); }); }
+  function loadJSZipLib(){ return new Promise(res=>{ if(window.JSZip) return res(window.JSZip); const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; s.onload=()=>res(window.JSZip||null); s.onerror=()=>res(null); document.head.appendChild(s); }); }
+  function dataUrlToU8(dataUrl){
+    try{
+      var i=String(dataUrl).indexOf(',');
+      var b64=i>=0?dataUrl.slice(i+1):dataUrl;
+      var bin=atob(b64); var len=bin.length; var arr=new Uint8Array(len);
+      for(var k=0;k<len;k++) arr[k]=bin.charCodeAt(k);
+      return arr;
+    }catch(e){ return null; }
+  }
+  function buildDocxDoc(docxLib,st){
+    var D=docxLib; var children=[];
+    var h=st.header||{};
+    children.push(new D.Paragraph({ text: h.escola||'', heading: D.HeadingLevel.HEADING_3 }));
+    children.push(new D.Paragraph({ children:[ new D.TextRun({text: h.titulo||'Simulado', bold:true, size:32}) ] }));
+    var sub=[h.serie,h.data].filter(Boolean).join(' · ');
+    if(sub) children.push(new D.Paragraph({ text: sub, spacing:{after:200} }));
+    var running=0;
+    (st.sections||[]).forEach(function(s){
+      if(!(s.questions||[]).length) return;
+      children.push(new D.Paragraph({ text:(s.nome||'').toUpperCase(), heading: D.HeadingLevel.HEADING_2, spacing:{before:300,after:150} }));
+      s.questions.forEach(function(q){
+        running++;
+        var num=String(running).padStart(2,'0');
+        children.push(new D.Paragraph({ children:[ new D.TextRun({text:'QUESTÃO '+num, bold:true}) ], spacing:{before:200,after:80} }));
+        var __raw=(q.enunciado||'').trim();
+      var blocks = __raw ? parseEnun(__raw) : [{type:'p',text:'(questão em branco)'}];
+        var imgs=q.imgs||[];
+        var pc=0;
+        function emitImgs(pos){
+          imgs.forEach(function(im){
+            if((im.pos||'fim')===pos && im.data){
+              var bytes=dataUrlToU8(im.data);
+              if(bytes) children.push(new D.Paragraph({ children:[ new D.ImageRun({ data:bytes, transformation:{width:320,height:200} }) ], spacing:{after:100} }));
+            }
+          });
+        }
+        emitImgs('inicio');
+        blocks.forEach(function(b){
+          if(b.type==='gap'){ children.push(new D.Paragraph({text:''})); return; }
+          if(b.type==='p'){ children.push(new D.Paragraph({ text:b.text, spacing:{after:80} })); pc++; emitImgs('p'+pc); return; }
+          if(b.type==='item'){ children.push(new D.Paragraph({ text:(b.marker||'')+' '+(b.text||''), indent:{left:360}, spacing:{after:60} })); return; }
+        });
+        imgs.forEach(function(im){
+          var p=im.pos||'fim'; var mm=/^p(\d+)$/.exec(p);
+          var validP = mm && parseInt(mm[1],10)<=pc;
+          if(p==='fim' || !validP){
+            if(im.data){ var bytes=dataUrlToU8(im.data); if(bytes) children.push(new D.Paragraph({ children:[ new D.ImageRun({ data:bytes, transformation:{width:320,height:200} }) ], spacing:{after:100} })); }
+          }
+        });
+        (q.alts||[]).forEach(function(a,i){
+          var im=(q.altImgs||[])[i]; var hasTxt=a&&a.trim(); var hasImg=im&&im.data;
+          if(!hasTxt && !hasImg) return;
+          var runs=[ new D.TextRun({text: LETTERS[i]+') ', bold:true}) ];
+          if(hasTxt) runs.push(new D.TextRun({text:a.trim()}));
+          children.push(new D.Paragraph({ children:runs, spacing:{after:60} }));
+          if(hasImg){ var bytes=dataUrlToU8(im.data); if(bytes) children.push(new D.Paragraph({ children:[ new D.ImageRun({ data:bytes, transformation:{width:160,height:100} }) ], indent:{left:360}, spacing:{after:80} })); }
+        });
+      });
+    });
+    return new D.Document({ sections:[{ properties:{ column:{count:2,space:708} }, children:children }] });
+  }
+  async function baixarWordProva(){
+    if(totalQuestions()===0){ toast('Adicione ao menos uma questão antes de gerar o Word.'); return; }
+    var btn=$('#btnDownloadWord'); var label=btn?btn.innerHTML:''; if(btn){ btn.disabled=true; btn.innerHTML='Gerando…'; }
+    try{
+      var D=null; try{ D=await loadDocxLib(); }catch(e){}
+      if(!D){ toast('Sem internet para gerar o Word agora.'); return; }
+      var doc=buildDocxDoc(D,state);
+      var blob=await D.Packer.toBlob(doc);
+      var docxBytes=new Uint8Array(await blob.arrayBuffer());
+      var folhaBytes=null; try{ folhaBytes=await criarFolhaDoSimulado(); }catch(e){}
+      var nome=slug(state.header.titulo);
+      if(docxBytes && folhaBytes){
+        var Z=null; try{ Z=await loadJSZipLib(); }catch(e){}
+        if(Z){
+          var zip=new Z();
+          zip.file('prova-'+nome+'.docx',docxBytes);
+          zip.file('folha-'+nome+'.pdf',folhaBytes);
+          var zipBytes=await zip.generateAsync({type:'uint8array'});
+          await entregarArquivo(zipBytes,nome+'-editavel.zip','application/zip');
+          toast('Arquivo .zip com a prova (Word) e a folha de resposta (PDF).');
+        } else {
+          await entregarArquivo(docxBytes,'prova-'+nome+'.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+          await entregarArquivo(folhaBytes,'folha-'+nome+'.pdf','application/pdf');
+          toast('Word e folha gerados (dois arquivos).');
+        }
+      } else if(docxBytes){
+        await entregarArquivo(docxBytes,'prova-'+nome+'.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        toast('Prova em Word gerada. A folha de resposta não pôde ser criada agora.');
+      } else {
+        toast('Não consegui gerar o Word.');
+      }
+    } finally { if(btn){ btn.disabled=false; btn.innerHTML=label; } }
+  }
+  $('#btnDownloadWord').addEventListener('click',baixarWordProva);
+
 
 
   const SIM_FMTV=1;
