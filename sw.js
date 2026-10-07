@@ -1,5 +1,5 @@
 /* Aferí — service worker (cache renovado) */
-const CACHE = 'aferi-v3';
+const CACHE = 'rectius-v2';
 const CORE = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-512-maskable.png',

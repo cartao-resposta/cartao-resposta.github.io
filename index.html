@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Aferí</title>
+<title>Rectius</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -180,11 +180,13 @@ tr.me td{font-weight:700}
 #splash.gone{opacity:0;pointer-events:none}
 .splash-name{color:#16241E;font-family:"Space Grotesk";font-size:21px;font-weight:600;letter-spacing:-.01em}
 .splash-sub{color:#6B7280;font-size:12.5px;margin-top:-8px}
-.sp-mark{position:relative;width:120px;height:112px;margin-bottom:6px}
-.sp-i{position:absolute;left:47px;bottom:8px;width:26px;height:66px;border-radius:13px;background:#16241E}
-.sp-bubble{position:absolute;left:74px;top:0;width:40px;height:40px;border-radius:50%;background:#0F6E56;animation:spDrop .8s cubic-bezier(.34,1.56,.64,1) .15s both}
-@keyframes spDrop{0%{transform:translateY(-66px);opacity:0}55%{opacity:1}100%{transform:translateY(0);opacity:1}}
-#splash .splash-name{animation:spFade .5s ease .5s both}
+.sp-mark{position:relative;width:120px;height:112px;margin-bottom:10px}
+.sp-check{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60}
+.sp-check-1{stroke:#CBD5CF;stroke-width:9;animation:spDraw .7s ease .3s forwards}
+.sp-check-2{stroke:#0F6E56;stroke-width:9;animation:spDraw .7s ease 1.05s forwards}
+@keyframes spDraw{to{stroke-dashoffset:0}}
+.splash-name{opacity:0;animation:spFade .6s ease 2s forwards}
+.splash-sub{opacity:0;animation:spFade .6s ease 2.25s forwards}
 @keyframes spFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 /* overlays (tutorial / info) */
 .ovl{position:fixed;inset:0;z-index:900;background:rgba(6,20,16,.55);display:flex;align-items:center;
@@ -525,8 +527,8 @@ tr.me td{font-weight:700}
 </head>
 <body>
 <header><div class="wrap hbar">
-  <div class="logo"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9.5" width="3.4" height="11" rx="1.7" fill="currentColor"/><circle cx="15.2" cy="7" r="2.7" fill="#0F6E56"/></svg></div>
-  <div><div class="htitle">Aferí<small>Correção por foto · A–E</small></div></div>
+  <div class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5.5 12.5 L9.5 16.5 L16 6.5" stroke="#CBD5CF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 12.5 L12 16.5 L18.5 6.5" stroke="#0F6E56" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div><div class="htitle">Rectius<small>Correção por foto · A–E</small></div></div>
   <button class="iconbtn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema"></button>
 </div></header>
 
@@ -935,17 +937,20 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 22set-e</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 02out-rectius-b</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <div id="splash">
-  <div class="sp-mark" aria-hidden="true"><div class="sp-i"></div><div class="sp-bubble"></div></div>
-  <div class="splash-name">Aferí</div>
-  <div class="splash-sub">Correção por foto</div>
+  <svg class="sp-mark" viewBox="0 0 120 112" aria-hidden="true">
+    <path class="sp-check sp-check-1" d="M30 58 L48 76 L78 34"/>
+    <path class="sp-check sp-check-2" d="M42 58 L60 76 L90 34"/>
+  </svg>
+  <div class="splash-name">Rectius</div>
+  <div class="splash-sub">do latim: mais certo</div>
 </div>
-<script>setTimeout(function(){var s=document.getElementById('splash');if(s){s.style.transition='opacity .45s ease';s.style.opacity='0';setTimeout(function(){if(s&&s.parentNode)s.remove();},520);}},1300);</script>
+<script>setTimeout(function(){var s=document.getElementById('splash');if(s){s.style.transition='opacity .45s ease';s.style.opacity='0';setTimeout(function(){if(s&&s.parentNode)s.remove();},520);}},3550);</script>
 
 <div id="folhaOvl" class="ovl hidden">
   <div class="ovl-card">
@@ -984,7 +989,7 @@ tr.me td{font-weight:700}
 
 <div id="tutorial" class="ovl hidden">
   <div class="ovl-card">
-    <h2>Bem-vindo ao Aferí</h2>
+    <h2>Bem-vindo ao Rectius</h2>
     <div class="sub">Corrigir provas por foto, em 3 passos:</div>
     <ol>
       <li><b>Monte o gabarito</b> na aba <b>Gabarito</b> — marque a resposta certa de cada questão. Escolha o cartão (Modelo 01 ou ENEM) lá no topo.</li>
@@ -1357,7 +1362,7 @@ $("#expCopy").onclick=async()=>{
 $("#impDo").onclick=()=>{
   const raw=$("#impIn").value.trim(); if(!raw){toast("Cole o código recebido primeiro.");return;}
   let d; try{ d=JSON.parse(raw); }catch(e){ toast("Código inválido — confira se copiou tudo."); return; }
-  if(!d||d.app!=="leitor-cartao"){ toast("Este código não é do Aferí."); return; }
+  if(!d||d.app!=="leitor-cartao"){ toast("Este código não é do Rectius."); return; }
   const temTurmas=d.roster&&typeof d.roster==="object";
   const temGab=d.key&&Array.isArray(d.key.ans);
   if(!temTurmas&&!temGab){ toast("O código não traz turmas nem gabarito."); return; }
@@ -2703,8 +2708,11 @@ function blDrawPDF(JsPDF, data){
   function drawTable(x,y,cols,rows){ let yy=tHeader(x,y,cols); rows.forEach(r=>{ yy=tRow(x,yy,cols,r,8); }); return yy; }
   function drawFoot(){
     const y=PH-12; setDraw(LINE); doc.setLineWidth(0.2); doc.line(ML,y,PW-MR,y);
+    doc.setLineWidth(0.35); doc.setLineCap("round"); doc.setLineJoin("round"); setDraw(MUTE);
+    doc.line(ML,y+2.6,ML+1.0,y+3.6); doc.line(ML+1.0,y+3.6,ML+2.6,y+1.0);
+    doc.line(ML+0.6,y+2.6,ML+1.6,y+3.6); doc.line(ML+1.6,y+3.6,ML+3.2,y+1.0);
     doc.setFont("helvetica","normal"); doc.setFontSize(7.5); setText(MUTE);
-    doc.text("Aferí", ML, y+4);
+    doc.text("Rectius", ML+4.2, y+4);
     doc.text("Gerado em "+data.data, PW-MR, y+4, {align:"right"});
   }
   function drawSigns(){
@@ -3855,6 +3863,18 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       }
     }
     if(LAY==='rascunho')drawRascunho();
+    try{
+      const __pc=doc.internal.getNumberOfPages();
+      for(let __p=1;__p<=__pc;__p++){
+        doc.setPage(__p);
+        const fx=ML, fy=PH-16;
+        doc.setLineWidth(0.6); doc.setLineCap('round'); doc.setLineJoin('round'); doc.setDrawColor(150,160,155);
+        doc.line(fx,fy,fx+3,fy+3); doc.line(fx+3,fy+3,fx+9,fy-5);
+        doc.line(fx+2,fy,fx+5,fy+3); doc.line(fx+5,fy+3,fx+11,fy-5);
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(150,160,155);
+        doc.text('Rectius', fx+16, fy+2);
+      }
+    }catch(e){}
     return doc.output('blob');
   }
 
@@ -3952,6 +3972,18 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       logos=logos.filter(Boolean);
       var cfg={ escola:(state.header&&state.header.escola)||'', titulo:(state.header&&state.header.titulo)||'', serie:(state.header&&state.header.serie)||'', nalt:5, copias:2, headerFull:true, logos:logos, campos:{turma:true,data:true,inscricao:false,professor:false}, disciplinas:secs };
       var r=fgGerar(cfg,JsPDF,logos[0]||null);
+      try{
+        var __pc2=r.doc.internal.getNumberOfPages();
+        for(var __p2=1;__p2<=__pc2;__p2++){
+          r.doc.setPage(__p2);
+          var __fx=6, __fy=293.5;
+          r.doc.setLineWidth(0.3); r.doc.setLineCap('round'); r.doc.setLineJoin('round'); r.doc.setDrawColor(165,175,170);
+          r.doc.line(__fx,__fy+1.6,__fx+0.7,__fy+2.4); r.doc.line(__fx+0.7,__fy+2.4,__fx+2.0,__fy+0.5);
+          r.doc.line(__fx+0.45,__fy+1.6,__fx+1.15,__fy+2.4); r.doc.line(__fx+1.15,__fy+2.4,__fx+2.45,__fy+0.5);
+          r.doc.setFont('helvetica','normal'); r.doc.setFontSize(5.5); r.doc.setTextColor(165,175,170);
+          r.doc.text('Rectius', __fx+3.2, __fy+2.2);
+        }
+      }catch(e){}
       var periodo=(state.header&&state.header.periodo)||''; var nomeSim=(cfg.titulo?(periodo?cfg.titulo+' - '+periodo:cfg.titulo):(periodo?'Simulado - '+periodo:'Simulado'));
       try{ setCustomSpec(r.spec); store.custom.escola=cfg.escola; store.custom.titulo=nomeSim; saveCustom(); refreshModeloOptions(); }catch(e){}
       var bytes=new Uint8Array(r.doc.output('arraybuffer'));
@@ -4020,7 +4052,8 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
         });
       });
     });
-    return new D.Document({ sections:[{ properties:{ column:{count:2,space:708} }, children:children }] });
+    var footer=new D.Footer({ children:[ new D.Paragraph({ alignment:D.AlignmentType.CENTER, children:[ new D.TextRun({text:'✓✓ Rectius', color:'9CA39A', size:14, italics:true}) ] }) ] });
+  return new D.Document({ sections:[{ properties:{ column:{count:2,space:708} }, footers:{ default:footer }, children:children }] });
   }
   async function baixarWordProva(){
     if(totalQuestions()===0){ toast('Adicione ao menos uma questão antes de gerar o Word.'); return; }
@@ -4142,7 +4175,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
 
 <div id="eb-gate" aria-hidden="false" role="dialog" aria-label="Entrar na escola">
   <div class="eb-card">
-    <div class="eb-brand"><div class="eb-dot">✓</div><div class="eb-h" style="margin:0">Aferí</div></div>
+    <div class="eb-brand"><div class="eb-dot">✓</div><div class="eb-h" style="margin:0">Rectius</div></div>
     <div id="eb-step-login">
       <div class="eb-h">Entrar na sua escola</div>
       <div class="eb-sub">Use seu nome, sua matrícula e o código da escola.</div>
