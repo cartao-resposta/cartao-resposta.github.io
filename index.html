@@ -723,6 +723,15 @@ tr.me td{font-weight:700}
           </div>
         </div>
         <div class="field">
+          <label for="h-serieid">Prova de qual série? (separa o gabarito e as notas de cada série no seletor “Cartão”)</label>
+          <select id="h-serieid" data-h="serieid">
+            <option value="">Sem série (usa a folha personalizada)</option>
+            <option value="1">1ª série</option>
+            <option value="2">2ª série</option>
+            <option value="3">3ª série</option>
+          </select>
+        </div>
+        <div class="field">
           <label for="h-instr">Observação no topo das folhas de questões (opcional)</label>
           <textarea id="h-instr" data-h="instr" placeholder="Aparece só nas páginas de questões. As instruções completas ficam na capa."></textarea>
         </div>
@@ -937,7 +946,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 02out-rectius-b</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 17nov-provas-serie-b</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1150,23 +1159,43 @@ function ensureKey2(mod){
 ensureKey2("m2d1"); ensureKey2("m2d2");
 function saveKeys2(){ save("omr_keys2",store.keys2); }
 /* modelo Personalizado (folha gerada pelo app) */
-store.custom = loadJSON("omr_custom", null);
+store.customs = loadJSON("omr_customs", null);
+if(!store.customs || typeof store.customs!=="object"){ const _old=loadJSON("omr_custom",null); store.customs=(_old&&_old.spec)?{custom:_old}:{}; save("omr_customs",store.customs); }
+store.lastCustom = (function(){ try{ return localStorage.getItem("omr_lastcustom"); }catch(e){ return null; } })();
+function isCustomMod(m){ return /^(custom|cs[123](x\d+)?)$/.test(m||""); }
+function activeCustomId(){ if(isCustomMod(MODELO)&&store.customs[MODELO]) return MODELO; if(store.lastCustom&&store.customs[store.lastCustom]) return store.lastCustom; const k=Object.keys(store.customs); return k.length?k[0]:null; }
+Object.defineProperty(store,"custom",{configurable:true, get(){ const id=activeCustomId(); return id? store.customs[id] : null; }});
+function customLabel(id){ const c=store.customs[id]||{}; const t=String(c.titulo||"").trim(); const sr=c.serieId?(c.serieId+"ª série"):""; const ar=c.arquivada?" (versão anterior)":"";
+  return (t? ((sr && t.indexOf(sr)<0)? t+" — "+sr : t) : (sr? "Prova da "+sr : "Personalizado (folha criada por você)"))+ar; }
+function registerCustoms(){ Object.keys(store.customs).forEach(id=>{ const c=store.customs[id]; if(!(c&&c.spec)) return;
+  MODELOS[id]={mod:id,kind:"custom",label:customLabel(id)}; if(store.done2 && !store.done2[id]) store.done2[id]={}; }); }
+registerCustoms();
+{ const _m=localStorage.getItem?.("omr_modelo"); if(_m && MODELOS[_m]) MODELO=_m; }
 function customReady(){ return !!(store.custom && store.custom.spec && store.custom.spec.cells); }
-function setCustomSpec(spec){
-  const prev=store.custom;
+function setCustomSpec(spec,id,meta){
+  id=id||"custom"; meta=meta||{};
+  const prev=store.customs[id];
   const same = prev && prev.spec && prev.spec.total===spec.total && JSON.stringify((prev.spec.discRanges||[]))===JSON.stringify(spec.discRanges||[]);
-  if(same) store.custom={spec, ans:prev.ans, escola:prev.escola, titulo:prev.titulo};
-  else { store.custom={spec, ans:Array(spec.total).fill(null)};
-    store.res=store.res.filter(r=>(r.mod||"m1")!=="custom"); saveRes();
-    if(store.done2){ store.done2.custom={}; saveDone2(); }
-  }
-  save("omr_custom",store.custom);
+  if(same) store.customs[id]={spec, ans:prev.ans, escola:prev.escola, titulo:prev.titulo, serieId:prev.serieId};
+  else { /* estrutura diferente: a prova anterior (com gabarito e notas) é guardada, nada é apagado */
+    if(prev && prev.spec){ const old=id+"x"+Date.now(); store.customs[old]=Object.assign({},prev,{arquivada:true});
+      store.res.forEach(r=>{ if((r.mod||"m1")===id) r.mod=old; }); saveRes();
+      if(store.done2){ store.done2[old]=store.done2[id]||{}; } }
+    store.customs[id]={spec, ans:Array(spec.total).fill(null)};
+    if(store.done2){ store.done2[id]={}; saveDone2(); } }
+  if(meta.escola!==undefined) store.customs[id].escola=meta.escola;
+  if(meta.titulo!==undefined) store.customs[id].titulo=meta.titulo;
+  if(meta.serieId!==undefined) store.customs[id].serieId=meta.serieId||null;
+  store.lastCustom=id; try{ localStorage.setItem("omr_lastcustom",id); }catch(e){}
+  registerCustoms(); save("omr_customs",store.customs);
+  return id;
 }
-function saveCustom(){ save("omr_custom",store.custom); }
+function saveCustom(){ save("omr_customs",store.customs); }
 /* "corrigidos" por modelo */
 store.done2 = loadJSON("omr_done2", null);
 if(!store.done2){ store.done2={ m1: store.done||{}, m2d1:{}, m2d2:{}, custom:{} }; }
-for(const m of ["m1","m2d1","m2d2","custom"]) if(!store.done2[m]) store.done2[m]={};
+for(const m of ["m1","m2d1","m2d2","custom"].concat(Object.keys(store.customs))) if(!store.done2[m]) store.done2[m]={};
+registerCustoms();
 function saveDone2(){ save("omr_done2",store.done2); }
 function doneMap(){ return store.done2[MODELO]; }
 /* migração das notas antigas: marca modelo m1 */
@@ -2444,14 +2473,22 @@ function updateGabaritoHead(){
     t.textContent="Gabarito — "+MODELOS[MODELO].label;
     s.textContent="Marque a alternativa certa das 90 questões, nas duas áreas (dá para renomear as áreas). Fica salvo no aparelho.";
   }else if(mKind()==="custom"){
-    t.textContent="Gabarito — folha personalizada";
+    t.textContent="Gabarito — "+customLabel(MODELO);
     s.textContent="Marque a alternativa certa de cada questão da folha que você criou ("+store.custom.spec.total+" questões). Fica salvo no aparelho.";
   }else{
     t.textContent="Gabarito e disciplinas";
     s.textContent="Nomeie as quatro disciplinas e marque a alternativa correta de cada questão. Fica salvo no aparelho.";
   }
 }
-function refreshModeloOptions(){ const o=$("#optCustom"); if(o){ o.hidden=!customReady(); o.textContent=(store.custom&&store.custom.titulo&&String(store.custom.titulo).trim())?String(store.custom.titulo).trim():"Personalizado (folha criada por você)"; } }
+function refreshModeloOptions(){
+  const sel=$("#modeloSel"); if(!sel) return;
+  Array.from(sel.querySelectorAll("option[data-dyn]")).forEach(o=>o.remove());
+  const o=$("#optCustom"); const legacy=!!(store.customs.custom&&store.customs.custom.spec);
+  if(o){ o.hidden=!legacy; o.textContent=customLabel("custom"); }
+  Object.keys(store.customs).filter(id=>id!=="custom").sort().forEach(id=>{ const c=store.customs[id]; if(!(c&&c.spec&&c.spec.cells)) return;
+    const op=document.createElement("option"); op.value=id; op.textContent=customLabel(id); op.setAttribute("data-dyn","1"); sel.appendChild(op); });
+  sel.value=MODELO;
+}
 function onModeloChange(){
   $("#modeloSel").value=MODELO;
   buildKeyUI(); updateKeyStatus(); updateResCount(); updateGabaritoHead();
@@ -2462,7 +2499,7 @@ function onModeloChange(){
 }
 $("#modeloSel").onchange=()=>{
   const v=$("#modeloSel").value;
-  if(v==="custom" && !customReady()){ toast("Crie uma folha primeiro (botão 'Criar folha' na aba Gabarito)."); $("#modeloSel").value=MODELO; return; }
+  if(isCustomMod(v) && !(store.customs[v]&&store.customs[v].spec)){ toast("Crie uma folha primeiro (botão 'Criar folha' na aba Gabarito)."); $("#modeloSel").value=MODELO; return; }
   setModelo(v); onModeloChange();
 };
 
@@ -2588,7 +2625,7 @@ $("#gerarPdfBtn").onclick=async()=>{
   if(!JsPDF){ btn.textContent="Gerar PDF"; toast("Precisa de internet na primeira vez para gerar o PDF."); return; }
   try{
     const {doc,spec,warn}=fgGerar(cfg,JsPDF,fgLogo); if(warn) toast(warn);
-    try{ setCustomSpec(spec); store.custom.escola=cfg.escola; store.custom.titulo=cfg.titulo; saveCustom(); refreshModeloOptions(); }catch(e){}
+    try{ setCustomSpec(spec,"custom",{escola:cfg.escola,titulo:cfg.titulo}); refreshModeloOptions(); }catch(e){}
     const bytes=new Uint8Array(doc.output("arraybuffer"));
     const filename=("folha-"+(cfg.titulo||cfg.escola||"simulado")).replace(/[^0-9A-Za-zÀ-ÿ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase()+".pdf";
     const ok=await entregarArquivo(bytes, filename, "application/pdf");
@@ -2606,7 +2643,7 @@ function blAssessment(titulo){ const t=(titulo||"").trim(); if(t) return t;
   const k=mKind(); return k==="m2"?"Simulado ENEM": k==="m1"?"Simulado — Modelo 01":"Avaliação"; }
 function blResFamily(){ const k=mKind();
   if(k==="m1") return store.res.filter(r=>(r.mod||"m1")==="m1");
-  if(k==="custom") return store.res.filter(r=>r.mod==="custom");
+  if(k==="custom") return store.res.filter(r=>r.mod===MODELO);
   return store.res.filter(r=>r.mod==="m2d1"||r.mod==="m2d2"); }
 function blStudents(turmaFilter){
   const k=mKind();
@@ -2902,7 +2939,7 @@ var _blBtn=$("#boletimBtn"); if(_blBtn) _blBtn.onclick=abrirBoletim;
   }
   const ok=$("#storageBannerOk"); if(ok) ok.onclick=()=>{ $("#storageBanner").classList.add("hidden"); try{localStorage.setItem("omr_bannerOff","1");}catch(e){} };
 })();
-if(MODELO==="custom" && !customReady()) MODELO="m1";
+if(isCustomMod(MODELO) && !(store.customs[MODELO]&&store.customs[MODELO].spec)) MODELO="m1";
 refreshModeloOptions();
 $("#modeloSel").value=MODELO;
 updateGabaritoHead();
@@ -3970,7 +4007,8 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       var LS=(state.cover&&state.cover.logos)||[];
       var logos=await Promise.all(LS.map(function(l){ return new Promise(function(res){ if(!l||!l.data){res(null);return;} var im=new Image(); im.onload=function(){res({dataUrl:l.data,ratio:(im.width/im.height)||1,fmt:(String(l.data).indexOf('image/png')>=0?'PNG':'JPEG')});}; im.onerror=function(){res(null);}; im.src=l.data; }); }));
       logos=logos.filter(Boolean);
-      var cfg={ escola:(state.header&&state.header.escola)||'', titulo:(state.header&&state.header.titulo)||'', serie:(state.header&&state.header.serie)||'', nalt:5, copias:2, headerFull:true, logos:logos, campos:{turma:true,data:true,inscricao:false,professor:false}, disciplinas:secs };
+      var __sid=parseInt((state.header&&state.header.serieid)||'',10); if(!(__sid>=1&&__sid<=3)) __sid=0;
+      var cfg={ escola:(state.header&&state.header.escola)||'', titulo:(state.header&&state.header.titulo)||'', serie:((state.header&&state.header.serie)||'')||(__sid?(__sid+'ª série'):''), serieId:__sid, nalt:5, copias:2, headerFull:true, logos:logos, campos:{turma:true,data:true,inscricao:false,professor:false}, disciplinas:secs };
       var r=fgGerar(cfg,JsPDF,logos[0]||null);
       try{
         var __pc2=r.doc.internal.getNumberOfPages();
@@ -3985,7 +4023,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
         }
       }catch(e){}
       var periodo=(state.header&&state.header.periodo)||''; var nomeSim=(cfg.titulo?(periodo?cfg.titulo+' - '+periodo:cfg.titulo):(periodo?'Simulado - '+periodo:'Simulado'));
-      try{ setCustomSpec(r.spec); store.custom.escola=cfg.escola; store.custom.titulo=nomeSim; saveCustom(); refreshModeloOptions(); }catch(e){}
+      try{ var __cid=(cfg.serieId?("cs"+cfg.serieId):"custom"); setCustomSpec(r.spec,__cid,{escola:cfg.escola,titulo:nomeSim,serieId:(cfg.serieId||null)}); refreshModeloOptions(); }catch(e){}
       var bytes=new Uint8Array(r.doc.output('arraybuffer'));
       return bytes;
     }catch(e){ return null; }
@@ -4095,13 +4133,13 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
   const SIM_FMTV=1;
   function buildCustomSpecFromRecipe(rec){
     const mock=new Proxy({},{get:function(){return function(){};}});
-    const cfg={nalt:(rec.nalt||5), headerFull:true, serie:rec.serie||'', titulo:rec.titulo||'', escola:rec.escola||'', campos:{turma:true,data:true}, disciplinas:(rec.disciplinas||[]).filter(function(d){return d&&d.n>0;})};
+    const cfg={nalt:(rec.nalt||5), headerFull:true, serieId:(rec.serieId||0), serie:rec.serie||'', titulo:rec.titulo||'', escola:rec.escola||'', campos:{turma:true,data:true}, disciplinas:(rec.disciplinas||[]).filter(function(d){return d&&d.n>0;})};
     return fgDrawPanel(mock, cfg, {x:0,y:0,w:210,h:297/2}, null);
   }
   function simGerarCodigo(){
     if(!(store.custom && store.custom.spec && store.custom.spec.cells)){ toast('Crie o simulado + a folha primeiro (botão "Criar simulado + folha").'); return; }
     const sp=store.custom.spec;
-    const rec={ nalt:sp.nalt||5, serie:(state.header&&state.header.serie)||'', titulo:store.custom.titulo||(state.header&&state.header.titulo)||'', escola:store.custom.escola||(state.header&&state.header.escola)||'', disciplinas:sp.discRanges.map(function(d){return {nome:d.nome,n:d.n};}) };
+    const rec={ nalt:sp.nalt||5, serieId:(store.custom.serieId||0), serie:(state.header&&state.header.serie)||'', titulo:store.custom.titulo||(state.header&&state.header.titulo)||'', escola:store.custom.escola||(state.header&&state.header.escola)||'', disciplinas:sp.discRanges.map(function(d){return {nome:d.nome,n:d.n};}) };
     const ans=Array.isArray(store.custom.ans)?store.custom.ans.map(function(a){return a==null?null:String(a);}):[];
     const filled=ans.filter(function(a){return a;}).length;
     const payload={ app:'leitor-cartao', v:1, kind:'simulado', fmtv:SIM_FMTV, nome:rec.titulo||'Simulado', recipe:rec, ans:ans };
@@ -4118,15 +4156,16 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
     let spec=null; try{ spec=buildCustomSpecFromRecipe(d.recipe); }catch(e){}
     if(!spec || !spec.cells){ toast('Não consegui reconstruir a folha deste código.'); return; }
     const nome=d.nome||'simulado', total=spec.total;
-    try{ setCustomSpec(spec); }catch(e){ toast('Falha ao aplicar a folha.'); return; }
+    const __sid=parseInt(d.recipe.serieId,10)||0; const __cid=(__sid>=1&&__sid<=3)?('cs'+__sid):'custom';
+    try{ setCustomSpec(spec,__cid,{escola:(d.recipe.escola||''),titulo:(d.recipe.titulo||nome),serieId:(__sid||null)}); }catch(e){ toast('Falha ao aplicar a folha.'); return; }
     let ans=Array.isArray(d.ans)?d.ans.slice(0,total).map(function(a){return a==null?null:String(a);}):[];
     while(ans.length<total) ans.push(null);
-    store.custom.ans=ans; store.custom.escola=(d.recipe.escola||''); store.custom.titulo=(d.recipe.titulo||nome);
+    store.customs[__cid].ans=ans;
     try{ saveCustom(); refreshModeloOptions(); }catch(e){}
-    try{ setModelo('custom'); var msel=document.getElementById('modeloSel'); if(msel) msel.value='custom'; onModeloChange(); }catch(e){}
+    try{ setModelo(__cid); var msel=document.getElementById('modeloSel'); if(msel) msel.value=__cid; onModeloChange(); }catch(e){}
     $('#simImpIn').value='';
     const filled=ans.filter(function(a){return a;}).length;
-    toast('Simulado "'+nome+'" importado ('+filled+' respostas). Modelo Personalizado ativado — pode corrigir.');
+    toast('Simulado "'+nome+'" importado ('+filled+' respostas). '+customLabel(__cid)+' ativado — pode corrigir.');
   }
   (function(){ const g=$('#simShareGen'); if(g) g.addEventListener('click',simGerarCodigo);
     const cp=$('#simShareCopy'); if(cp) cp.addEventListener('click',async function(){ const ta=$('#simShareOut'); if(!ta.value){toast('Gere o código primeiro.');return;} try{ await navigator.clipboard.writeText(ta.value); toast('Código copiado — cole no WhatsApp ou e-mail.'); }catch(e){ ta.focus(); ta.select(); toast('Selecione o texto e copie manualmente.'); } });
