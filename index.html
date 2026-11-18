@@ -946,7 +946,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 17nov-provas-serie-b</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 18nov-espaco-disciplinas-b</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -3827,8 +3827,8 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
         doc.text(LETTERS[i],x+3.4,cy+2.7,{align:'center'});
         let inY=yy;
         if(a.trim()){
-          const lines=doc.splitTextToSize(a.trim(),W-14);
           doc.setFont('times','normal');doc.setFontSize(FS_ALT);doc.setTextColor(19,26,38);
+          const lines=doc.splitTextToSize(a.trim(),W-14);
           drawLinesJust(lines,x+13,yy,W-13,jf,LH_ALT,FS_ALT*0.9);
           inY+=LH_ALT*lines.length;
         }
@@ -3889,10 +3889,11 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
     const LAY=state.layout||'atomico';
     for(const s of state.sections){
       if(!s.questions.length)continue;
-      const p=placeCol(22,54);
-      doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(19,26,38);
-      doc.text((s.nome||'').toUpperCase(),p.x,p.y+9);
-      doc.setDrawColor(19,26,38);doc.setLineWidth(.8);doc.line(p.x,p.y+13,p.x+colW,p.y+13);
+      if(colY[curCol]>contentTop+1 && colY[curCol]>MT+1) colY[curCol]+=8; /* respiro entre a disciplina anterior e este título */
+      const p=placeCol(26,58);
+      doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(19,26,38);
+      doc.text((s.nome||'').toUpperCase(),p.x,p.y+11);
+      doc.setDrawColor(19,26,38);doc.setLineWidth(.8);doc.line(p.x,p.y+16,p.x+colW,p.y+16);
       for(const q of s.questions){
         running++;const num=String(running).padStart(2,'0');
         if(LAY==='quebra'){ drawQFlow(q,num,colW); }
