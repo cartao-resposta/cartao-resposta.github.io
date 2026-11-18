@@ -946,7 +946,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 18nov-espaco-disciplinas-b</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 18nov-arquivos-separados</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2613,6 +2613,16 @@ async function entregarArquivo(bytes, filename, mime){
   try{ const blob=new Blob([bytes],{type:mime}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1500); return true; }catch(e){}
   return false;
 }
+async function entregarVarios(items){
+  items=(items||[]).filter(i=>i&&i.bytes);
+  if(!items.length) return false;
+  if(items.length===1) return entregarArquivo(items[0].bytes,items[0].filename,items[0].mime);
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||"");
+  if(isMobile){ try{ const files=items.map(i=>new File([i.bytes],i.filename,{type:i.mime}));
+    if(navigator.canShare&&navigator.canShare({files})){ await navigator.share({files,title:items[0].filename}); return true; } }catch(e){ if(e&&e.name==="AbortError") return true; } }
+  for(let k=0;k<items.length;k++){ await entregarArquivo(items[k].bytes,items[k].filename,items[k].mime); if(k<items.length-1) await new Promise(r=>setTimeout(r,600)); }
+  return true;
+}
 $("#gerarPdfBtn").onclick=async()=>{
   const discs=discRows.map(d=>({nome:(d.nome||"").trim()||"Disciplina", n:Math.max(0,parseInt(d.n)||0)})).filter(d=>d.n>0);
   if(!discs.length){ toast("Adicione ao menos uma disciplina com questões."); return; }
@@ -3969,11 +3979,10 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       const nome=slug(state.header.titulo);
       const provaBytes=provaBlob?new Uint8Array(await provaBlob.arrayBuffer()):null;
       if(provaBytes&&folhaBytes){
-        let merged=null;try{merged=await mergePDFs([provaBytes,folhaBytes]);}catch(e){}
-        if(merged){ await entregarArquivo(merged,nome+'-prova-e-folha.pdf','application/pdf');toast('Prova + folha num único PDF.'); }
-        else { await entregarArquivo(provaBytes,nome+'.pdf','application/pdf');await entregarArquivo(folhaBytes,'folha-'+nome+'.pdf','application/pdf');toast('PDF pronto (dois arquivos).'); }
-      } else if(provaBytes){ await entregarArquivo(provaBytes,nome+'.pdf','application/pdf'); }
-      else if(folhaBytes){ await entregarArquivo(folhaBytes,'folha-'+nome+'.pdf','application/pdf'); }
+        await entregarVarios([{bytes:provaBytes,filename:nome+'-prova.pdf',mime:'application/pdf'},{bytes:folhaBytes,filename:nome+'-folha-de-respostas.pdf',mime:'application/pdf'}]);
+        toast('Dois arquivos: a prova e a folha de respostas.');
+      } else if(provaBytes){ await entregarArquivo(provaBytes,nome+'-prova.pdf','application/pdf'); }
+      else if(folhaBytes){ await entregarArquivo(folhaBytes,nome+'-folha-de-respostas.pdf','application/pdf'); }
       else { toast('Não consegui montar o PDF — abrindo a impressão do navegador.');window.print(); }
     } finally { if(btn){btn.disabled=false;btn.innerHTML=label;} }
   });
@@ -4105,22 +4114,12 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       var docxBytes=new Uint8Array(await blob.arrayBuffer());
       var folhaBytes=null; try{ folhaBytes=await criarFolhaDoSimulado(); }catch(e){}
       var nome=slug(state.header.titulo);
+      var MIMEDOCX='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       if(docxBytes && folhaBytes){
-        var Z=null; try{ Z=await loadJSZipLib(); }catch(e){}
-        if(Z){
-          var zip=new Z();
-          zip.file('prova-'+nome+'.docx',docxBytes);
-          zip.file('folha-'+nome+'.pdf',folhaBytes);
-          var zipBytes=await zip.generateAsync({type:'uint8array'});
-          await entregarArquivo(zipBytes,nome+'-editavel.zip','application/zip');
-          toast('Arquivo .zip com a prova (Word) e a folha de resposta (PDF).');
-        } else {
-          await entregarArquivo(docxBytes,'prova-'+nome+'.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-          await entregarArquivo(folhaBytes,'folha-'+nome+'.pdf','application/pdf');
-          toast('Word e folha gerados (dois arquivos).');
-        }
+        await entregarVarios([{bytes:docxBytes,filename:nome+'-prova.docx',mime:MIMEDOCX},{bytes:folhaBytes,filename:nome+'-folha-de-respostas.pdf',mime:'application/pdf'}]);
+        toast('Dois arquivos: a prova (Word) e a folha de respostas (PDF).');
       } else if(docxBytes){
-        await entregarArquivo(docxBytes,'prova-'+nome+'.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        await entregarArquivo(docxBytes,nome+'-prova.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         toast('Prova em Word gerada. A folha de resposta não pôde ser criada agora.');
       } else {
         toast('Não consegui gerar o Word.');
