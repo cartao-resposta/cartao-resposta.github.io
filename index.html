@@ -514,6 +514,9 @@ tr.me td{font-weight:700}
   color:var(--ink); }
 .sim-scope .appbar{position:static;background:transparent;border:0;box-shadow:none;padding:6px 0 0;min-height:0;height:auto}
 .sim-scope .appbar .actions{justify-content:flex-end;width:100%;flex-wrap:wrap}
+.sim-scope .appbar .btn-ghost-light{background:var(--surface);color:var(--ink);border:1px solid var(--line2,var(--line))}
+.sim-scope .appbar .btn-ghost-light:hover{background:var(--surface2)}
+#btnLib{font-weight:600;color:var(--primary)!important;border-color:var(--primary)!important}
 .sim-scope .workspace{grid-template-columns:1fr !important;min-height:0}
 .sim-scope .pane{min-height:0 !important}
 .sim-scope .pane-editor{border-right:none;padding:14px 0 60px}
@@ -946,7 +949,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 18nov-arquivos-separados</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-mestre</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -3038,8 +3041,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
   }
 
   /* ---------- persistence ---------- */
-  function load(){
-    try{const raw=localStorage.getItem(KEY);if(raw){const p=JSON.parse(raw);if(p&&p.sections){
+  function norm(p){
       if(!p.cover)p.cover=defaultCover();
       if(!Array.isArray(p.cover.logos))p.cover.logos=[];
       if(typeof p.cover.transcription!=='string')p.cover.transcription=pickPhrase(null);
@@ -3049,10 +3051,15 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       if(typeof p.layout!=='string')p.layout='atomico';
       (p.sections||[]).forEach(s=>(s.questions||[]).forEach(q=>{ if(!Array.isArray(q.imgs)){q.imgs=(q.img&&q.img.data)?[{data:q.img.data,name:q.img.name,pos:q.imgPos||'fim'}]:[];} q.img=null; if(!Array.isArray(q.altImgs))q.altImgs=[null,null,null,null,null]; while(q.altImgs.length<5)q.altImgs.push(null); if(typeof q.altCols!=='string')q.altCols='1'; }));
       return p;
+  }
+  function load(){
+    try{const raw=localStorage.getItem(KEY);if(raw){const p=JSON.parse(raw);if(p&&p.sections){
+      return norm(p);
     }}}catch(e){}
     return defaultState();
   }
   function save(){
+    try{ if(window.SimAPI&&typeof window.SimAPI.onChange==='function') window.SimAPI.onChange(); }catch(e){}
     try{localStorage.setItem(KEY,JSON.stringify(state));hideNotice();}
     catch(e){
       if(!saveWarned){saveWarned=true;showNotice('As imagens são grandes e não couberam para salvar automaticamente neste navegador. Elas continuam funcionando agora e na impressão, mas podem se perder ao fechar a aba. Considere reduzir o tamanho das imagens.');}
@@ -3990,6 +3997,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
   $('#btnClear').addEventListener('click',async()=>{
     const ok=await confirmModal('Isto apaga todas as questões, disciplinas e a capa, recomeçando do zero. Uma nova frase de transcrição será sorteada.','Limpar tudo','Limpar tudo');
     if(ok){
+      try{ if(window.SimAPI&&typeof window.SimAPI.beforeClear==='function') await window.SimAPI.beforeClear(); }catch(e){}
       state=defaultState();saveWarned=false;$('#notice').style.display='none';
       document.querySelectorAll('[data-h]').forEach(inp=>{inp.value=state.header[inp.getAttribute('data-h')]||'';});
       renderAll();toast('Recomeçado do zero.');
@@ -4174,7 +4182,39 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
 
   state=load();
   renderEditor();renderPreview();
+  /* ponte para a camada de administrador (biblioteca de simulados) */
+  window.SimAPI=Object.assign(window.SimAPI||{},{
+    get:function(){ return state; },
+    temConteudo:function(){ try{ return simTemConteudo(); }catch(e){ return false; } },
+    total:function(){ try{ return totalQuestions(); }catch(e){ return 0; } },
+    substituir:function(novo){
+      state=norm(JSON.parse(JSON.stringify(novo)));
+      saveWarned=false; $('#notice').style.display='none';
+      renderEditor(); try{ syncCover(); renderCoverLogos(); }catch(e){}
+      renderPreview(); try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
+    },
+    novo:function(){
+      state=defaultState(); saveWarned=false; $('#notice').style.display='none';
+      renderEditor(); try{ syncCover(); renderCoverLogos(); }catch(e){}
+      renderPreview(); try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
+    }
+  });
 })();
+</script>
+<script id="fb-loader">
+/* carrega o SDK do Firebase uma única vez (usado pela camada Escola e pelo acesso de administrador) */
+window.__loadFirebase=function(){
+  if(window.__fbLoadP) return window.__fbLoadP;
+  window.__fbLoadP=new Promise(function(res){
+    if(window.firebase&&window.firebase.firestore) return res();
+    var t=setTimeout(res,8000);
+    var srcs=["https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js",
+              "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js",
+              "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"];
+    var i=0; (function next(){ if(i>=srcs.length){ clearTimeout(t); return res(); } var sc=document.createElement("script"); sc.src=srcs[i++]; sc.onload=next; sc.onerror=function(){ clearTimeout(t); res(); }; document.head.appendChild(sc); })();
+  });
+  return window.__fbLoadP;
+};
 </script>
 <!-- ============ CAMADA ESCOLA (shell integrado) — aditivo, não altera dados omr_* ============ -->
 <style id="eb-css">
@@ -4275,16 +4315,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
       this.ready=true;
       return this.mode;
     },
-    _loadFB:function(){
-      return new Promise(function(res){
-        if(window.firebase&&window.firebase.firestore) return res();
-        setTimeout(res,8000);
-        var srcs=["https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js",
-                  "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js",
-                  "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"];
-        var i=0; (function next(){ if(i>=srcs.length) return res(); var s=document.createElement("script"); s.src=srcs[i++]; s.onload=next; s.onerror=function(){res();}; document.head.appendChild(s); })();
-      });
-    },
+    _loadFB:function(){ return window.__loadFirebase(); },
     _initFirebase:async function(){
       try{
         await this._loadFB();
@@ -4293,8 +4324,11 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
         this.db=firebase.firestore(); this.kind="firebase";
         var auth=firebase.auth();
         var uid=await new Promise(function(res){
-          var done=false, unsub=auth.onAuthStateChanged(function(u){ if(u&&!done){done=true;try{unsub();}catch(e){} res(u.uid);} });
-          auth.signInAnonymously().catch(function(){ if(!done){done=true; res(null);} });
+          var done=false, unsub=auth.onAuthStateChanged(function(u){
+            if(done) return; done=true; try{unsub();}catch(e){}
+            if(u){ res(u.uid); }
+            else { auth.signInAnonymously().then(function(c){ res(c&&c.user?c.user.uid:null); }).catch(function(){ res(null); }); }
+          });
         });
         this.uid=uid; this.admin=false;
         return !!uid;
@@ -4519,5 +4553,501 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
 </script>
 <!-- ============ FIM CAMADA ESCOLA ============ -->
 
+<script id="mestre-js">
+(function(){
+"use strict";
+/* ============ ACESSO DE ADMINISTRADOR (master) — aditivo ============
+   Só entra em ação para o e-mail do administrador. Para os demais professores
+   o app continua exatamente como antes (nada é carregado nem sincronizado). */
+var MASTER_EMAIL="thiagosilveirademelo@gmail.com";
+var HINT="rectius_master_hint", LK_CUR="mestre_cur", LK_SYNC="mestre_sync";
+var FBCONFIG={apiKey:"AIzaSyC7CYEABKqo0dn42ugSih892H_5bzflGf0",authDomain:"leitor-cartao-7ffea.firebaseapp.com",projectId:"leitor-cartao-7ffea",storageBucket:"leitor-cartao-7ffea.firebasestorage.app",messagingSenderId:"633986653452",appId:"1:633986653452:web:03ca7e3c56497416babd29"};
+var CHUNK=150000;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ var d=document.createElement("div"); d.textContent=(s==null?"":String(s)); return d.innerHTML; }
+function lsGet(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+function uidgen(){ return "s"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function fnv(str){ var h=0x811c9dc5; for(var i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return h.toString(16); }
+function fmtData(ts){ try{ var d=new Date(ts), p=function(n){ return String(n).padStart(2,"0"); }; return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes()); }catch(e){ return ""; } }
+
+/* ---------- base64 + compressão (gzip quando o navegador oferece) ---------- */
+function toB64(bytes){ var s="", n=0x8000; for(var i=0;i<bytes.length;i+=n) s+=String.fromCharCode.apply(null,bytes.subarray(i,i+n)); return btoa(s); }
+function fromB64(b){ var s=atob(b), u=new Uint8Array(s.length); for(var i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return u; }
+async function pack(obj){
+  var bytes=new TextEncoder().encode(JSON.stringify(obj)), enc="raw";
+  if(typeof CompressionStream!=="undefined"){
+    try{ var st=new Blob([bytes]).stream().pipeThrough(new CompressionStream("gzip")); bytes=new Uint8Array(await new Response(st).arrayBuffer()); enc="gz"; }catch(e){ bytes=new TextEncoder().encode(JSON.stringify(obj)); enc="raw"; }
+  }
+  return {enc:enc,b64:toB64(bytes)};
+}
+async function unpack(enc,b64){
+  var bytes=fromB64(b64);
+  if(enc==="gz"){ var st=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip")); bytes=new Uint8Array(await new Response(st).arrayBuffer()); }
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/* ---------- biblioteca local (IndexedDB; memória se indisponível) ---------- */
+var LIB={ db:null, mem:{},
+  open:function(){
+    var self=this;
+    return new Promise(function(res){
+      try{
+        if(typeof indexedDB==="undefined"){ res(); return; }
+        var r=indexedDB.open("rectius-master",1);
+        r.onupgradeneeded=function(){ r.result.createObjectStore("simulados",{keyPath:"id"}); };
+        r.onsuccess=function(){ self.db=r.result; res(); };
+        r.onerror=function(){ res(); };
+      }catch(e){ res(); }
+    });
+  },
+  _tx:function(mode,fn){
+    var self=this;
+    return new Promise(function(res,rej){
+      try{ var tx=self.db.transaction("simulados",mode), st=tx.objectStore("simulados"), req=fn(st); tx.oncomplete=function(){ res(req&&req.result); }; tx.onerror=function(){ rej(tx.error); }; }
+      catch(e){ rej(e); }
+    });
+  },
+  all:async function(){ if(!this.db) return Object.keys(this.mem).map(function(k){ return this.mem[k]; },this); return (await this._tx("readonly",function(s){ return s.getAll(); }))||[]; },
+  get:async function(id){ if(!this.db) return this.mem[id]||null; return (await this._tx("readonly",function(s){ return s.get(id); }))||null; },
+  put:async function(e){ if(!this.db){ this.mem[e.id]=e; return; } await this._tx("readwrite",function(s){ return s.put(e); }); },
+  del:async function(id){ if(!this.db){ delete this.mem[id]; return; } await this._tx("readwrite",function(s){ return s.delete(id); }); }
+};
+
+/* ---------- nuvem: Firestore (produção) ou db do Claude (teste no artefato) ---------- */
+var MC={ kind:null, db:null, root:null, email:null, master:false, fbUser:null, ready:false,
+  col:function(n){ return this.db.collection(this.root+"/"+n); },
+  doc:function(p){ return this.db.doc(this.root+"/"+p); },
+  initClaude:async function(){
+    try{
+      if(!(window.claude&&window.claude.use)) return false;
+      var db=await window.claude.use("db"), user=await window.claude.use("user");
+      if(!db||!user) return false;
+      var uid=await user.id(); if(!uid) return false;
+      var own=false; try{ own=!!(await user.isOwner()); }catch(e){}
+      this.db=db; this.kind="claude"; this.root="data/users/"+uid+"/master"; this.master=own; this.email="(dono do artefato)";
+      return true;
+    }catch(e){ return false; }
+  },
+  initFirebase:async function(){
+    try{
+      await window.__loadFirebase();
+      if(!window.firebase||!firebase.initializeApp) return false;
+      if(!firebase.apps.length) firebase.initializeApp(FBCONFIG);
+      this.kind="firebase"; this.db=firebase.firestore(); this.root="mestre/dados";
+      var auth=firebase.auth(), self=this;
+      try{ await auth.getRedirectResult(); }catch(e){}
+      var u=await new Promise(function(res){ var un=auth.onAuthStateChanged(function(x){ try{ un(); }catch(e){} res(x); }); });
+      self._setUser(u);
+      return true;
+    }catch(e){ return false; }
+  },
+  _setUser:function(u){
+    this.fbUser=u||null;
+    this.email=u&&u.email||null;
+    this.master=!!(u&&!u.isAnonymous&&u.email&&u.email.toLowerCase()===MASTER_EMAIL&&u.emailVerified!==false);
+  },
+  login:async function(){
+    if(!this.db||this.kind!=="firebase"){ var ok=await this.initFirebase(); if(!ok) throw new Error("Sem conexão com o Firebase."); }
+    var auth=firebase.auth(), prov=new firebase.auth.GoogleAuthProvider(), cred;
+    try{
+      if(auth.currentUser&&auth.currentUser.isAnonymous){
+        try{ cred=await auth.currentUser.linkWithPopup(prov); }
+        catch(e){
+          if(e&&e.code==="auth/credential-already-in-use"&&e.credential){ cred=await auth.signInWithCredential(e.credential); }
+          else throw e;
+        }
+      } else { cred=await auth.signInWithPopup(prov); }
+    }catch(e){
+      if(e&&(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment")){ await auth.signInWithRedirect(prov); return; }
+      throw e;
+    }
+    this._setUser((cred&&cred.user)||auth.currentUser);
+    if(this.master) try{ localStorage.setItem(HINT,"1"); }catch(e){}
+  },
+  logout:async function(){
+    try{ localStorage.removeItem(HINT); }catch(e){}
+    if(this.kind==="firebase"){ try{ await firebase.auth().signOut(); }catch(e){} }
+    this.master=false; this.fbUser=null; this.email=null;
+  },
+  /* leitura/escrita */
+  getDoc:async function(p){ var s=await this.doc(p).get(); return s.exists?s.data():null; },
+  setDoc:async function(p,d){ await this.doc(p).set(d); },
+  delDoc:async function(p){ await this.doc(p).delete(); },
+  list:async function(n){ var q=await this.col(n).get(); return q.docs.map(function(d){ var o=d.data()||{}; o.__id=d.id; return o; }); }
+};
+
+/* ---------- estado do administrador ---------- */
+var M={ active:false, applying:false, currentId:null, timers:{}, st:{busy:false,last:null,err:null,pending:0}, tab:"sims", panelOpen:false, delAsk:null };
+
+function syncMeta(){ return lsGet(LK_SYNC,{gab:{},res:[],salt:null}); }
+function setSyncMeta(m){ lsSet(LK_SYNC,m); }
+
+/* ---------- biblioteca: salvar / abrir / duplicar / excluir ---------- */
+function entryFromState(st,id,prev){
+  var h=st.header||{}, sid=parseInt(h.serieid,10)||0;
+  var nq=0; try{ nq=window.SimAPI.total(); }catch(e){}
+  return { id:id, titulo:(h.titulo||"Simulado sem título"), serie:(h.serie||(sid?sid+"ª série":"")), serieId:sid, periodo:(h.periodo||""),
+    nq:nq, criado:(prev&&prev.criado)||Date.now(), atualizado:Date.now(), state:JSON.parse(JSON.stringify(st)), dirty:true };
+}
+var lastHash={};
+async function autosave(force){
+  if(!M.active||!window.SimAPI) return null;
+  if(!window.SimAPI.temConteudo()) return null;
+  var st=window.SimAPI.get(), id=M.currentId||uidgen(), js=JSON.stringify(st), h=fnv(js);
+  if(!force&&lastHash[id]===h) return id;
+  var prev=await LIB.get(id);
+  if(prev&&fnv(JSON.stringify(prev.state))===h){ lastHash[id]=h; M.currentId=id; try{ localStorage.setItem(LK_CUR,id); }catch(e){} return id; }
+  var e=entryFromState(st,id,prev); await LIB.put(e);
+  lastHash[id]=h; M.currentId=id; try{ localStorage.setItem(LK_CUR,id); }catch(er){}
+  scheduleSync(); if(M.panelOpen&&M.tab==="sims") renderPanel();
+  return id;
+}
+function scheduleAutosave(){ if(!M.active) return; clearTimeout(M.timers.auto); M.timers.auto=setTimeout(function(){ autosave(false).catch(function(){}); },1500); }
+async function flush(){ clearTimeout(M.timers.auto); try{ return await autosave(false); }catch(e){ return null; } }
+
+async function abrir(id){
+  await flush();
+  var e=await LIB.get(id); if(!e) return false;
+  window.SimAPI.substituir(e.state);
+  M.currentId=id; try{ localStorage.setItem(LK_CUR,id); }catch(er){}
+  lastHash[id]=fnv(JSON.stringify(e.state));
+  return true;
+}
+async function novo(){
+  await flush();
+  window.SimAPI.novo(); M.currentId=null; try{ localStorage.removeItem(LK_CUR); }catch(e){}
+}
+async function duplicar(id){
+  await flush();
+  var e=await LIB.get(id); if(!e) return null;
+  var nid=uidgen(), st=JSON.parse(JSON.stringify(e.state)); st.header=st.header||{}; st.header.titulo=(st.header.titulo||"Simulado")+" (cópia)";
+  var c=Object.assign({},e,{id:nid,titulo:st.header.titulo,state:st,criado:Date.now(),atualizado:Date.now(),dirty:true});
+  await LIB.put(c); scheduleSync(); return nid;
+}
+async function excluir(id){
+  var e=await LIB.get(id);
+  await LIB.del(id);
+  if(M.currentId===id){ M.currentId=null; try{ localStorage.removeItem(LK_CUR); }catch(er){} }
+  delete lastHash[id];
+  try{ await cloudDelSim(id,e&&e.n); }catch(er){ M.st.err="Não consegui excluir na nuvem agora."; }
+}
+
+/* ---------- nuvem: simulados ---------- */
+async function cloudPushSim(e){
+  var pk=await pack(e.state), n=Math.max(1,Math.ceil(pk.b64.length/CHUNK));
+  var prevMeta=await MC.getDoc("simulados/"+e.id);
+  for(var i=0;i<n;i++) await MC.setDoc("simulados/"+e.id+"/partes/"+i,{i:i,d:pk.b64.slice(i*CHUNK,(i+1)*CHUNK)});
+  await MC.setDoc("simulados/"+e.id,{id:e.id,titulo:e.titulo,serie:e.serie,serieId:e.serieId||0,periodo:e.periodo||"",nq:e.nq||0,criado:e.criado,atualizado:e.atualizado,enc:pk.enc,n:n,v:1});
+  if(prevMeta&&prevMeta.n>n) for(var k=n;k<prevMeta.n;k++){ try{ await MC.delDoc("simulados/"+e.id+"/partes/"+k); }catch(er){} }
+}
+async function cloudDelSim(id){
+  var meta=await MC.getDoc("simulados/"+id); var n=(meta&&meta.n)||0;
+  for(var i=0;i<n;i++){ try{ await MC.delDoc("simulados/"+id+"/partes/"+i); }catch(e){} }
+  await MC.delDoc("simulados/"+id);
+}
+async function cloudPullSim(meta){
+  var s="";
+  for(var i=0;i<meta.n;i++){ var p=await MC.getDoc("simulados/"+meta.id+"/partes/"+i); if(!p) throw new Error("parte ausente"); s+=p.d; }
+  return await unpack(meta.enc,s);
+}
+async function syncLib(pull){
+  var locais=await LIB.all(), i;
+  if(pull){
+    var metas=await MC.list("simulados");
+    for(i=0;i<metas.length;i++){
+      var m=metas[i]; if(!m||!m.id||!m.n) continue;
+      var l=await LIB.get(m.id);
+      if(!l||(m.atualizado>l.atualizado)){
+        try{ var st=await cloudPullSim(m);
+          await LIB.put({id:m.id,titulo:m.titulo,serie:m.serie,serieId:m.serieId||0,periodo:m.periodo||"",nq:m.nq||0,criado:m.criado||m.atualizado,atualizado:m.atualizado,state:st,dirty:false,n:m.n});
+          if(M.currentId===m.id&&window.SimAPI){ window.SimAPI.substituir(st); lastHash[m.id]=fnv(JSON.stringify(st)); }
+        }catch(e){ }
+      }
+    }
+    locais=await LIB.all();
+  }
+  for(i=0;i<locais.length;i++){
+    var e=locais[i]; if(!e.dirty) continue;
+    await cloudPushSim(e); e.dirty=false; await LIB.put(e);
+  }
+}
+
+/* ---------- nuvem: gabaritos (m1, m2 e provas personalizadas) ---------- */
+function gabItems(){
+  var out={};
+  try{ out.m1={tipo:"m1",key:store.key}; }catch(e){}
+  try{ Object.keys(store.keys2||{}).forEach(function(k){ out[k]={tipo:"m2",key:store.keys2[k]}; }); }catch(e){}
+  try{ Object.keys(store.customs||{}).forEach(function(k){ var c=store.customs[k]; if(c&&c.spec) out[k]={tipo:"custom",c:c}; }); }catch(e){}
+  return out;
+}
+function gabBlank(it){
+  if(!it) return true;
+  if(it.tipo==="custom") return !(it.c&&Array.isArray(it.c.ans)&&it.c.ans.some(function(x){ return x!=null; }));
+  return !(it.key&&Array.isArray(it.key.ans)&&it.key.ans.some(function(x){ return x!=null; }));
+}
+function applyGab(id,obj){
+  M.applying=true;
+  try{
+    if(obj.tipo==="m1"){ store.key=normalizeKey(obj.key); saveKey(); }
+    else if(obj.tipo==="m2"){ store.keys2[id]=obj.key; saveKeys2(); }
+    else if(obj.tipo==="custom"){ store.customs[id]=obj.c; if(!store.done2[id]) store.done2[id]={}; saveCustom(); registerCustoms(); }
+  }finally{ M.applying=false; }
+}
+async function syncGab(pull){
+  var meta=syncMeta(), items=gabItems(), changedLocal=false, ids=Object.keys(items);
+  var remote={};
+  if(pull){ (await MC.list("gabaritos")).forEach(function(d){ remote[d.__id]=d; }); }
+  if(pull){
+    for(var r in remote){
+      var d=remote[r], last=meta.gab[r];
+      var loc=items[r]?fnv(JSON.stringify(items[r])):null;
+      if(d.h!==loc && (loc===null || loc===last || (last===undefined && gabBlank(items[r])))){
+        try{ applyGab(r,JSON.parse(d.d)); meta.gab[r]=d.h; changedLocal=true; }catch(e){}
+      }
+    }
+    items=gabItems(); ids=Object.keys(items);
+  }
+  for(var i=0;i<ids.length;i++){
+    var id=ids[i], js=JSON.stringify(items[id]), h=fnv(js);
+    if(meta.gab[id]===h) continue;
+    if(meta.gab[id]===undefined && gabBlank(items[id])) continue;
+    await MC.setDoc("gabaritos/"+id,{id:id,h:h,atualizado:Date.now(),d:js});
+    meta.gab[id]=h;
+  }
+  setSyncMeta(meta);
+  if(changedLocal) refreshUI();
+}
+
+/* ---------- nuvem: resultados (sem nomes: só um código do aluno + nota) ---------- */
+function normName(n){ return String(n||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," "); }
+async function aidOf(name,salt){
+  var buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+"|"+normName(name)));
+  var a=new Uint8Array(buf), s=""; for(var i=0;i<6;i++) s+=("0"+a[i].toString(16)).slice(-2); return s;
+}
+async function ensureSalt(){
+  var meta=syncMeta();
+  if(meta.salt) return meta.salt;
+  var c=await MC.getDoc("config/salt");
+  if(!c||!c.v){ var a=new Uint8Array(16); crypto.getRandomValues(a); var v=""; for(var i=0;i<a.length;i++) v+=("0"+a[i].toString(16)).slice(-2); c={v:v}; await MC.setDoc("config/salt",c); }
+  meta.salt=c.v; setSyncMeta(meta); return c.v;
+}
+async function rosterMap(salt){
+  var map={};
+  try{ var ro=store.roster||{}; for(var t in ro){ var al=(ro[t]&&ro[t].al)||[]; for(var i=0;i<al.length;i++){ map[await aidOf(al[i],salt)]=al[i]; } } }catch(e){}
+  return map;
+}
+function resDoc(r,aid){
+  var o=JSON.parse(JSON.stringify(r)); delete o.name; delete o.aluno; o.aid=aid;
+  return { id:String(r.id), mod:r.mod||"m1", turma:r.turma||"", aid:aid, roll:r.roll||"", total:r.total||0, nq:r.nq||0, ts:r.ts||"", d:JSON.stringify(o) };
+}
+async function syncRes(pull){
+  var salt=await ensureSalt(), meta=syncMeta(), synced=new Set(meta.res.map(String)), i;
+  var localIds=new Set(store.res.map(function(r){ return String(r.id); }));
+  /* exclusões feitas aqui chegam à nuvem */
+  var gone=meta.res.filter(function(id){ return !localIds.has(String(id)); });
+  for(i=0;i<gone.length;i++){ try{ await MC.delDoc("resultados/"+gone[i]); }catch(e){} synced.delete(String(gone[i])); }
+  /* novos resultados daqui sobem */
+  for(i=0;i<store.res.length;i++){
+    var r=store.res[i], id=String(r.id); if(synced.has(id)) continue;
+    var aid=await aidOf(r.aluno||r.name||"",salt);
+    await MC.setDoc("resultados/"+id,resDoc(r,aid)); synced.add(id);
+  }
+  if(pull){
+    var rm=await rosterMap(salt), added=0, remote=await MC.list("resultados");
+    for(i=0;i<remote.length;i++){
+      var d=remote[i], rid=String(d.id||d.__id);
+      if(localIds.has(rid)||synced.has(rid)) { synced.add(rid); continue; }
+      try{
+        var o=JSON.parse(d.d), nm=rm[d.aid];
+        o.name=nm||("Aluno ·"+String(d.aid||"").slice(0,4)); o.aluno=nm||""; o.from="nuvem";
+        M.applying=true; store.res.push(o); M.applying=false;
+        if(nm&&o.turma){ var mod=o.mod||"m1"; if(!store.done2[mod]) store.done2[mod]={}; var dm=store.done2[mod]; if(!dm[o.turma]) dm[o.turma]=[]; if(dm[o.turma].indexOf(nm)<0) dm[o.turma].push(nm); }
+        synced.add(rid); added++;
+      }catch(e){ M.applying=false; }
+    }
+    if(added){ M.applying=true; try{ saveRes(); saveDone2(); }finally{ M.applying=false; } refreshUI(); }
+  }
+  meta.res=Array.from(synced); setSyncMeta(meta);
+}
+
+function refreshUI(){
+  try{ if(typeof refreshModeloOptions==="function") refreshModeloOptions(); }catch(e){}
+  try{ buildKeyUI(); }catch(e){}
+  try{ updateKeyStatus(); }catch(e){}
+  try{ updateResCount(); }catch(e){}
+  try{ renderResults(); }catch(e){}
+  try{ fillTurmaPicker(); }catch(e){}
+}
+
+/* ---------- orquestração da sincronização ---------- */
+function scheduleSync(){ if(!M.active) return; M.st.pending++; clearTimeout(M.timers.sync); M.timers.sync=setTimeout(function(){ syncAll(false); },4000); updateStatus(); }
+async function syncAll(pull){
+  if(!M.active||!MC.master) return;
+  if(M.st.busy){ M.timers.again=true; return; }
+  M.st.busy=true; updateStatus();
+  try{
+    await flush();
+    await syncLib(pull); await syncGab(pull); await syncRes(pull);
+    M.st.last=Date.now(); M.st.err=null; M.st.pending=0;
+  }catch(e){ M.st.err=(e&&e.message)||"falha ao sincronizar"; }
+  finally{
+    M.st.busy=false; updateStatus(); if(M.panelOpen) renderPanel();
+    if(M.timers.again){ M.timers.again=false; scheduleSync(); }
+  }
+}
+function installHooks(){
+  if(M.hooked) return; M.hooked=true;
+  ["saveRes","saveKey","saveKeys2","saveCustom","setCustomSpec"].forEach(function(n){
+    var orig=window[n]; if(typeof orig!=="function") return;
+    window[n]=function(){ var r=orig.apply(this,arguments); if(!M.applying) scheduleSync(); return r; };
+  });
+  window.SimAPI.onChange=scheduleAutosave;
+  window.SimAPI.beforeClear=async function(){ await flush(); M.currentId=null; try{ localStorage.removeItem(LK_CUR); }catch(e){} };
+  window.addEventListener("online",function(){ syncAll(false); });
+}
+
+/* ---------- interface ---------- */
+function statusTexto(){
+  if(!MC.master) return {t:"Desconectado",c:"off"};
+  if(M.st.busy) return {t:"Sincronizando…",c:"warn"};
+  if(M.st.err) return {t:"Sem sincronizar",c:"err"};
+  if(M.st.pending) return {t:"Salvo aqui · subindo…",c:"warn"};
+  return {t:"Sincronizado",c:"ok"};
+}
+function updateStatus(){
+  var b=$("ms-open"); if(b){ var s=statusTexto(); b.setAttribute("data-s",s.c); b.title=s.t; }
+  var p=$("ms-pill"); if(p){ var s2=statusTexto(); p.textContent=s2.t; p.className="ms-pill "+s2.c; }
+}
+function closePanel(){ M.panelOpen=false; var p=$("ms-panel"); if(p) p.style.display="none"; }
+function openPanel(tab){ M.panelOpen=true; if(tab) M.tab=tab; var p=$("ms-panel"); if(p) p.style.display="flex"; renderPanel(); }
+
+async function renderPanel(){
+  var sh=$("ms-sheet"); if(!sh||!M.panelOpen) return;
+  var s=statusTexto(), h='<div class="ms-row"><div><div class="ms-tt">Administrador</div><div class="ms-mut">'+esc(MC.email||"")+'</div></div><div><span class="ms-pill '+s.c+'" id="ms-pill">'+s.t+'</span> <button class="ms-x" id="ms-close" aria-label="Fechar">×</button></div></div>';
+  if(!MC.master){
+    h+='<p class="ms-mut" style="margin:10px 0">Entre com a conta Google do administrador para liberar a biblioteca de simulados e salvar tudo no banco de dados.</p>';
+    if(MC.fbUser&&!MC.fbUser.isAnonymous&&MC.email) h+='<p class="ms-err">A conta '+esc(MC.email)+' não tem acesso de administrador.</p>';
+    h+='<button class="ms-btn" id="ms-login">Entrar com Google</button><div class="ms-err" id="ms-err">'+esc(M.loginErr||"")+'</div>';
+    sh.innerHTML=h; bindPanel(); return;
+  }
+  h+='<div class="ms-tabs"><button class="ms-tab'+(M.tab==="sims"?" on":"")+'" data-t="sims">Simulados</button><button class="ms-tab'+(M.tab==="dados"?" on":"")+'" data-t="dados">Dados</button><button class="ms-tab'+(M.tab==="conta"?" on":"")+'" data-t="conta">Conta</button></div><div id="ms-body"></div>';
+  sh.innerHTML=h;
+  var body=$("ms-body");
+  if(M.tab==="sims"){
+    var list=(await LIB.all()).sort(function(a,b){ return b.atualizado-a.atualizado; });
+    var b='<div class="ms-row" style="margin:4px 0 8px"><div class="ms-mut">'+list.length+' simulado'+(list.length!==1?"s":"")+' salvo'+(list.length!==1?"s":"")+'</div><button class="ms-mini solid" id="ms-new">Novo simulado</button></div>';
+    if(!list.length) b+='<p class="ms-mut">Nada salvo ainda. O simulado que você está editando é salvo aqui automaticamente assim que tiver conteúdo.</p>';
+    list.forEach(function(e){
+      var atual=(e.id===M.currentId), ask=(M.delAsk===e.id);
+      b+='<div class="ms-item"><div class="ms-info"><div class="ms-name">'+esc(e.titulo)+(atual?' <span class="ms-tag">em edição</span>':'')+'</div>'
+        +'<div class="ms-mut">'+esc(e.serie||"sem série")+' · '+(e.nq||0)+' questões · '+fmtData(e.atualizado)+' · '+(e.dirty?'⏳ pendente':'☁ salvo')+'</div></div>'
+        +'<div class="ms-acts">'+(ask
+          ? '<button class="ms-mini danger" data-a="delok" data-id="'+e.id+'">Excluir de vez</button><button class="ms-mini" data-a="delno">Cancelar</button>'
+          : '<button class="ms-mini solid" data-a="open" data-id="'+e.id+'">'+(atual?'Continuar':'Abrir')+'</button><button class="ms-mini" data-a="dup" data-id="'+e.id+'">Duplicar</button><button class="ms-mini" data-a="del" data-id="'+e.id+'">Excluir</button>')
+        +'</div></div>';
+    });
+    body.innerHTML=b;
+  } else if(M.tab==="dados"){
+    var meta=syncMeta(), ng=Object.keys(meta.gab||{}).length, nr=(meta.res||[]).length;
+    body.innerHTML='<p class="ms-mut" style="margin:6px 0 10px">Última sincronização: '+(M.st.last?fmtData(M.st.last):"ainda não nesta sessão")+(M.st.err?' · <span class="ms-err">'+esc(M.st.err)+'</span>':'')+'</p>'
+      +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Gabaritos e provas</div><div class="ms-mut">'+ng+' na nuvem</div></div></div>'
+      +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Resultados das turmas</div><div class="ms-mut">'+nr+' na nuvem · só código do aluno e nota (os nomes ficam neste aparelho)</div></div></div>'
+      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="ms-mini solid" id="ms-sync">Sincronizar agora</button><button class="ms-mini" id="ms-bkp">Baixar backup (.json)</button></div>';
+  } else {
+    body.innerHTML='<p class="ms-mut" style="margin:6px 0 10px">Conectado como <b>'+esc(MC.email||"")+'</b>'+(MC.kind==="claude"?' (modo de teste do Claude)':'')+'.</p><button class="ms-mini" id="ms-logout">Sair do modo administrador</button>';
+  }
+  bindPanel();
+}
+function bindPanel(){
+  var c=$("ms-close"); if(c) c.onclick=closePanel;
+  var lg=$("ms-login"); if(lg) lg.onclick=async function(){
+    lg.disabled=true; lg.textContent="Abrindo o Google…"; M.loginErr="";
+    try{ await MC.login(); if(MC.master){ await activate(); toast2("Administrador conectado."); } }
+    catch(e){ M.loginErr="Não consegui entrar: "+((e&&(e.code||e.message))||"erro"); }
+    renderPanel();
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("#ms-sheet .ms-tab"),function(t){ t.onclick=function(){ M.tab=t.getAttribute("data-t"); M.delAsk=null; renderPanel(); }; });
+  var nw=$("ms-new"); if(nw) nw.onclick=async function(){ await novo(); closePanel(); toast2("Novo simulado em branco. O anterior ficou na biblioteca."); };
+  Array.prototype.forEach.call(document.querySelectorAll("#ms-sheet [data-a]"),function(b){
+    b.onclick=async function(){
+      var a=b.getAttribute("data-a"), id=b.getAttribute("data-id");
+      if(a==="open"){ if(await abrir(id)){ closePanel(); toast2("Simulado aberto para edição."); try{ document.getElementById("tab-simulado").click(); }catch(e){} } }
+      else if(a==="dup"){ await duplicar(id); renderPanel(); toast2("Cópia criada."); }
+      else if(a==="del"){ M.delAsk=id; renderPanel(); }
+      else if(a==="delno"){ M.delAsk=null; renderPanel(); }
+      else if(a==="delok"){ M.delAsk=null; await excluir(id); renderPanel(); toast2("Simulado excluído."); }
+    };
+  });
+  var sy=$("ms-sync"); if(sy) sy.onclick=async function(){ sy.disabled=true; await syncAll(true); renderPanel(); };
+  var bk=$("ms-bkp"); if(bk) bk.onclick=backup;
+  var lo=$("ms-logout"); if(lo) lo.onclick=async function(){ await MC.logout(); await deactivate(); renderPanel(); };
+}
+function toast2(m){ try{ toast(m); }catch(e){} }
+async function backup(){
+  var data={app:"rectius",v:1,em:new Date().toISOString(),simulados:await LIB.all(),gabaritos:gabItems(),resultados:store.res,roster:store.roster};
+  var bytes=new TextEncoder().encode(JSON.stringify(data));
+  try{ await entregarArquivo(bytes,"rectius-backup-"+new Date().toISOString().slice(0,10)+".json","application/json"); }catch(e){}
+}
+
+function mountUI(){
+  if($("ms-panel")) return;
+  var css=document.createElement("style"); css.id="ms-css";
+  css.textContent=".master-only{display:none!important}.is-master .master-only{display:inline-flex!important}"
+   +"#ms-open{background:none;border:none;color:inherit;opacity:.75;cursor:pointer;font:inherit;padding:0;text-decoration:underline}#ms-open[data-s=ok]::after{content:' ●';color:#0F6E56}#ms-open[data-s=warn]::after{content:' ●';color:#C98A1B}#ms-open[data-s=err]::after{content:' ●';color:#E23D4B}"
+   +"#ms-panel{position:fixed;inset:0;z-index:100000;background:rgba(15,20,30,.45);display:none;align-items:flex-end;justify-content:center}"
+   +"#ms-sheet{background:var(--surface,#fff);color:var(--ink,#151A22);width:100%;max-width:560px;max-height:86vh;overflow:auto;border-radius:16px 16px 0 0;padding:18px;box-sizing:border-box;font:400 14px system-ui,sans-serif}"
+   +"@media(min-width:640px){#ms-panel{align-items:center}#ms-sheet{border-radius:16px}}"
+   +".ms-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.ms-tt{font:600 17px system-ui,sans-serif}.ms-mut{font:400 12px/1.5 system-ui,sans-serif;color:var(--muted,#5B6472)}"
+   +".ms-x{background:none;border:none;font-size:24px;line-height:1;cursor:pointer;color:var(--muted,#5B6472);padding:0 4px}"
+   +".ms-pill{display:inline-block;font:600 11px system-ui,sans-serif;padding:2px 8px;border-radius:20px;background:#E1F5EE;color:#085041}.ms-pill.warn{background:#FBF0DC;color:#8a5a12}.ms-pill.err{background:#FDE7E9;color:#a3202c}.ms-pill.off{background:#EEF1F5;color:#5B6472}"
+   +".ms-tabs{display:flex;gap:6px;margin:12px 0}.ms-tab{flex:1;border:1px solid var(--line2,#D2D9E4);background:var(--surface,#fff);border-radius:9px;padding:8px;font:600 13px system-ui,sans-serif;cursor:pointer;color:var(--ink,#151A22)}.ms-tab.on{background:#0F6E56;border-color:#0F6E56;color:#fff}"
+   +".ms-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line,#E1E6EE)}.ms-info{min-width:0}.ms-name{font:600 14px system-ui,sans-serif;overflow-wrap:anywhere}.ms-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}"
+   +".ms-tag{font:600 10px system-ui,sans-serif;background:#E1F5EE;color:#085041;padding:1px 6px;border-radius:10px;vertical-align:middle}"
+   +".ms-mini{border:1px solid #0F6E56;background:var(--surface,#fff);color:#0F6E56;border-radius:8px;padding:6px 10px;font:600 12px system-ui,sans-serif;cursor:pointer;white-space:nowrap}.ms-mini.solid{background:#0F6E56;color:#fff}.ms-mini.danger{background:#E23D4B;border-color:#E23D4B;color:#fff}"
+   +".ms-btn{width:100%;margin-top:8px;padding:11px;border:none;border-radius:10px;background:#0F6E56;color:#fff;font:600 14px system-ui,sans-serif;cursor:pointer}.ms-btn:disabled{opacity:.6}.ms-err{color:#E23D4B;font:400 13px system-ui,sans-serif}";
+  document.head.appendChild(css);
+  var pn=document.createElement("div"); pn.id="ms-panel"; pn.innerHTML='<div id="ms-sheet"></div>';
+  pn.addEventListener("click",function(e){ if(e.target===pn) closePanel(); });
+  document.body.appendChild(pn);
+  /* link discreto no rodapé */
+  var sig=document.querySelector(".sig");
+  if(sig&&!$("ms-open")){ sig.appendChild(document.createTextNode(" · ")); var b=document.createElement("button"); b.id="ms-open"; b.type="button"; b.textContent="Administrador"; b.onclick=function(){ openPanel(M.active?"sims":null); }; sig.appendChild(b); }
+  /* botão da biblioteca (só aparece para o administrador) */
+  var acts=document.querySelector("#sec-simulado .appbar .actions");
+  if(acts&&!$("btnLib")){ var bl=document.createElement("button"); bl.className="btn btn-ghost-light btn-sm master-only"; bl.id="btnLib"; bl.type="button"; bl.textContent="Meus simulados"; bl.onclick=function(){ openPanel("sims"); }; acts.insertBefore(bl,acts.firstChild); }
+}
+
+async function activate(){
+  if(M.active||!MC.master) return;
+  await LIB.open();
+  M.active=true; document.body.classList.add("is-master");
+  M.currentId=(function(){ try{ return localStorage.getItem(LK_CUR); }catch(e){ return null; } })();
+  installHooks(); updateStatus();
+  /* o que já está sendo editado entra na biblioteca; depois sincroniza (puxando o que veio de outros aparelhos) */
+  try{ await autosave(false); }catch(e){}
+  syncAll(true);
+}
+async function deactivate(){
+  M.active=false; document.body.classList.remove("is-master"); updateStatus();
+}
+
+async function boot(){
+  mountUI();
+  /* teste no artefato do Claude: o dono é o administrador */
+  var tries=0;
+  while(!(window.claude&&window.claude.use)&&tries<6){ await sleep(250); tries++; if(location.protocol==="https:"&&location.hostname.indexOf("github.io")>=0) break; }
+  if(window.claude&&window.claude.use){ if(await MC.initClaude()&&MC.master){ await activate(); } return; }
+  /* produção: só tenta reconectar sozinho quem já entrou como administrador antes */
+  var hint=null; try{ hint=localStorage.getItem(HINT); }catch(e){}
+  if(hint){ var ok=await MC.initFirebase(); if(ok&&MC.master){ try{ await activate(); }catch(e){} } }
+}
+window.MestreAPI={ _M:M, _MC:MC, _LIB:LIB, activate:activate, syncAll:syncAll, autosave:autosave, abrir:abrir, novo:novo, duplicar:duplicar, excluir:excluir, openPanel:openPanel, aidOf:aidOf, boot:boot };
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot); else boot();
+})();
+
+</script>
 </body>
 </html>
