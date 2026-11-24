@@ -949,7 +949,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-mestre</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-mestre-turmas</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -4821,6 +4821,111 @@ async function syncGab(pull){
   if(changedLocal) refreshUI();
 }
 
+
+/* ---------- importar turmas de uma planilha .xlsx (lida no próprio aparelho) ---------- */
+async function zipEntries(buf){
+  var u=new Uint8Array(buf), dv=new DataView(buf), e=u.length-22;
+  while(e>=0&&dv.getUint32(e,true)!==0x06054b50) e--;
+  if(e<0) throw new Error("Arquivo não parece ser .xlsx");
+  var n=dv.getUint16(e+10,true), off=dv.getUint32(e+16,true), out={}, td=new TextDecoder();
+  for(var i=0;i<n;i++){
+    var m=dv.getUint16(off+10,true), csz=dv.getUint32(off+20,true), nl=dv.getUint16(off+28,true), el=dv.getUint16(off+30,true), cl=dv.getUint16(off+32,true), lo=dv.getUint32(off+42,true);
+    var name=td.decode(u.subarray(off+46,off+46+nl));
+    out[name]={m:m,csz:csz,lo:lo}; off+=46+nl+el+cl;
+  }
+  out.__read=async function(nm){
+    var ent=out[nm]; if(!ent) return null;
+    var lo=ent.lo, ln=dv.getUint16(lo+26,true), le=dv.getUint16(lo+28,true), data=u.subarray(lo+30+ln+le,lo+30+ln+le+ent.csz);
+    if(ent.m===0) return td.decode(data);
+    var st=new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return td.decode(new Uint8Array(await new Response(st).arrayBuffer()));
+  };
+  return out;
+}
+function xmlDoc(t){ return new DOMParser().parseFromString(t,"application/xml"); }
+async function lerXlsx(buf){
+  var z=await zipEntries(buf);
+  var wb=xmlDoc(await z.__read("xl/workbook.xml")), rels=xmlDoc(await z.__read("xl/_rels/workbook.xml.rels")), rmap={};
+  Array.prototype.forEach.call(rels.getElementsByTagName("Relationship"),function(r){ rmap[r.getAttribute("Id")]=r.getAttribute("Target"); });
+  var ss=[], sst=await z.__read("xl/sharedStrings.xml");
+  if(sst){ Array.prototype.forEach.call(xmlDoc(sst).getElementsByTagName("si"),function(si){ var t=""; Array.prototype.forEach.call(si.getElementsByTagName("t"),function(x){ t+=x.textContent; }); ss.push(t); }); }
+  var sheets=[], list=wb.getElementsByTagName("sheet");
+  for(var i=0;i<list.length;i++){
+    var nm=list[i].getAttribute("name"), rid=list[i].getAttribute("r:id")||list[i].getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","id");
+    var tg=rmap[rid]; if(!tg) continue; tg=tg.replace(/^\//,""); if(tg.indexOf("xl/")!==0) tg="xl/"+tg;
+    var xml=await z.__read(tg); if(!xml) continue;
+    var rows={}, cells=xmlDoc(xml).getElementsByTagName("c");
+    for(var j=0;j<cells.length;j++){
+      var c=cells[j], ref=c.getAttribute("r")||"", m=/^([A-C])(\d+)$/.exec(ref); if(!m) continue;
+      var t=c.getAttribute("t"), v=c.getElementsByTagName("v")[0], val=null;
+      if(t==="s"&&v) val=ss[parseInt(v.textContent,10)]; else if(t==="inlineStr"){ val=c.textContent; } else if(v) val=v.textContent;
+      if(val==null||String(val).trim()==="") continue;
+      (rows[m[2]]=rows[m[2]]||{})[m[1]]=String(val).trim();
+    }
+    sheets.push({name:nm,rows:rows});
+  }
+  return sheets;
+}
+/* abas "1º A", "2º C"… → ids do app (1A, 2C…); lista de nomes na coluna ALUNOS */
+function turmasDaPlanilha(sheets){
+  var out={};
+  sheets.forEach(function(sh){
+    var m=/^\s*([1-3])\s*[º°ªo]?\s*(?:ano|série|serie)?\s*([A-Za-z])\s*$/i.exec(sh.name); if(!m) return;
+    var id=m[1]+m[2].toUpperCase(), nrs=Object.keys(sh.rows).map(Number).sort(function(a,b){ return a-b; }), hdr=null, i;
+    for(i=0;i<nrs.length;i++){ var r=sh.rows[nrs[i]]; if(r.B&&normName(r.B)==="alunos"){ hdr=nrs[i]; break; } }
+    if(hdr==null) return;
+    var nomes=[];
+    for(i=0;i<nrs.length;i++){
+      if(nrs[i]<=hdr) continue; var r2=sh.rows[nrs[i]];
+      if(!r2.B||!/^\d+$/.test(r2.A||"")) continue;
+      if(/[0-9]{2,}/.test(r2.B)||r2.B.length>80) continue;
+      nomes.push(r2.B.replace(/\s+/g," "));
+    }
+    out[id]=nomes;
+  });
+  return out;
+}
+function planoImport(tm){
+  var plano={}, ro=store.roster||{};
+  Object.keys(tm).forEach(function(id){
+    var atuais=(ro[id]&&ro[id].al)||[], mapa={};
+    atuais.forEach(function(n){ mapa[normName(n)]=n; });
+    var final=[], vistos={}, novos=[];
+    tm[id].forEach(function(n){ var k=normName(n); if(vistos[k]) return; vistos[k]=1; if(mapa[k]) final.push(mapa[k]); else { final.push(n); novos.push(n); } });
+    var mantidos=atuais.filter(function(n){ return !vistos[normName(n)]; });
+    plano[id]={final:final.concat(mantidos),novos:novos,mantidos:mantidos,total:tm[id].length};
+  });
+  return plano;
+}
+async function importarArquivo(file){
+  var sheets=await lerXlsx(await file.arrayBuffer()), tm=turmasDaPlanilha(sheets);
+  if(!Object.keys(tm).length) throw new Error("Não encontrei abas de turma (1º A, 2º B…) com a coluna ALUNOS.");
+  M.imp=planoImport(tm); M.impNome=file.name;
+}
+function aplicarImport(){
+  var ro=store.roster||{};
+  Object.keys(M.imp||{}).forEach(function(id){ if(!ro[id]) ro[id]={n:id,al:[]}; ro[id].al=M.imp[id].final; });
+  store.roster=ro; saveRoster(); M.imp=null; refreshUI();
+}
+
+/* ---------- nuvem: turmas e nomes dos alunos (só o administrador acessa) ---------- */
+function rosterBlank(r){ try{ return !Object.keys(r||{}).some(function(k){ return r[k]&&r[k].al&&r[k].al.length; }); }catch(e){ return true; } }
+async function syncRoster(pull){
+  var meta=syncMeta(), js=JSON.stringify(store.roster||{}), h=fnv(js), last=meta.ros, remote=null;
+  if(pull){ remote=await MC.getDoc("turmas/roster"); }
+  if(remote&&remote.h!==h&&(last===h||rosterBlank(store.roster))){
+    try{
+      var r=JSON.parse(remote.d); M.applying=true;
+      try{ store.roster=r; saveRoster(); }finally{ M.applying=false; }
+      meta.ros=remote.h; setSyncMeta(meta); refreshUI(); return;
+    }catch(e){ M.applying=false; }
+  }
+  if(last===h) return;
+  if(rosterBlank(store.roster)&&last===undefined) return;
+  await MC.setDoc("turmas/roster",{h:h,atualizado:Date.now(),d:js});
+  meta.ros=h; setSyncMeta(meta);
+}
+
 /* ---------- nuvem: resultados (sem nomes: só um código do aluno + nota) ---------- */
 function normName(n){ return String(n||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," "); }
 async function aidOf(name,salt){
@@ -4890,7 +4995,7 @@ async function syncAll(pull){
   M.st.busy=true; updateStatus();
   try{
     await flush();
-    await syncLib(pull); await syncGab(pull); await syncRes(pull);
+    await syncLib(pull); await syncGab(pull); await syncRoster(pull); await syncRes(pull);
     M.st.last=Date.now(); M.st.err=null; M.st.pending=0;
   }catch(e){ M.st.err=(e&&e.message)||"falha ao sincronizar"; }
   finally{
@@ -4900,7 +5005,7 @@ async function syncAll(pull){
 }
 function installHooks(){
   if(M.hooked) return; M.hooked=true;
-  ["saveRes","saveKey","saveKeys2","saveCustom","setCustomSpec"].forEach(function(n){
+  ["saveRes","saveKey","saveKeys2","saveCustom","setCustomSpec","saveRoster"].forEach(function(n){
     var orig=window[n]; if(typeof orig!=="function") return;
     window[n]=function(){ var r=orig.apply(this,arguments); if(!M.applying) scheduleSync(); return r; };
   });
@@ -4954,14 +5059,33 @@ async function renderPanel(){
     var meta=syncMeta(), ng=Object.keys(meta.gab||{}).length, nr=(meta.res||[]).length;
     body.innerHTML='<p class="ms-mut" style="margin:6px 0 10px">Última sincronização: '+(M.st.last?fmtData(M.st.last):"ainda não nesta sessão")+(M.st.err?' · <span class="ms-err">'+esc(M.st.err)+'</span>':'')+'</p>'
       +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Gabaritos e provas</div><div class="ms-mut">'+ng+' na nuvem</div></div></div>'
-      +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Resultados das turmas</div><div class="ms-mut">'+nr+' na nuvem · só código do aluno e nota (os nomes ficam neste aparelho)</div></div></div>'
+      +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Turmas e nomes dos alunos</div><div class="ms-mut">'+(meta.ros?'na nuvem (só você acessa)':'ainda não enviadas')+'</div></div></div>'
+      +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Resultados das turmas</div><div class="ms-mut">'+nr+' na nuvem · com o código do aluno e a nota</div></div></div>'
+      +impHtml()
       +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="ms-mini solid" id="ms-sync">Sincronizar agora</button><button class="ms-mini" id="ms-bkp">Baixar backup (.json)</button></div>';
   } else {
     body.innerHTML='<p class="ms-mut" style="margin:6px 0 10px">Conectado como <b>'+esc(MC.email||"")+'</b>'+(MC.kind==="claude"?' (modo de teste do Claude)':'')+'.</p><button class="ms-mini" id="ms-logout">Sair do modo administrador</button>';
   }
   bindPanel();
 }
+function impHtml(){
+  var h='<div class="ms-item" style="display:block"><div class="ms-name">Turmas pela planilha (.xlsx)</div><div class="ms-mut" style="margin:2px 0 8px">Escolha o arquivo baixado do Drive (abas 1º A, 2º B… com a coluna ALUNOS). Nada é apagado: só entram os nomes novos.</div>';
+  if(M.imp){
+    var ids=Object.keys(M.imp).sort(), tn=0, tm=0;
+    h+='<div class="ms-mut" style="margin-bottom:6px"><b>'+esc(M.impNome||"")+'</b></div>';
+    ids.forEach(function(id){ var p=M.imp[id]; tn+=p.novos.length; tm+=p.mantidos.length; h+='<div class="ms-mut">'+id+': '+p.total+' na planilha · <b>'+p.novos.length+' novos</b>'+(p.mantidos.length?' · '+p.mantidos.length+' só no app (mantidos)':'')+'</div>'; });
+    h+='<div style="display:flex;gap:8px;margin-top:8px"><button class="ms-mini solid" id="ms-impok">Aplicar ('+tn+' novos)</button><button class="ms-mini" id="ms-impno">Cancelar</button></div>';
+  } else {
+    h+='<button class="ms-mini solid" id="ms-impbtn">Escolher planilha…</button><input type="file" id="ms-impfile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">';
+    if(M.impErr) h+='<div class="ms-err" style="margin-top:6px">'+esc(M.impErr)+'</div>';
+  }
+  return h+'</div>';
+}
 function bindPanel(){
+  var ib=$("ms-impbtn"), ifl=$("ms-impfile");
+  if(ib&&ifl){ ib.onclick=function(){ ifl.click(); }; ifl.onchange=async function(){ var f=ifl.files&&ifl.files[0]; if(!f) return; M.impErr=""; try{ await importarArquivo(f); }catch(e){ M.impErr=(e&&e.message)||"Não consegui ler a planilha."; } renderPanel(); }; }
+  var iok=$("ms-impok"); if(iok) iok.onclick=function(){ aplicarImport(); renderPanel(); toast2("Turmas atualizadas pela planilha."); };
+  var ino=$("ms-impno"); if(ino) ino.onclick=function(){ M.imp=null; renderPanel(); };
   var c=$("ms-close"); if(c) c.onclick=closePanel;
   var lg=$("ms-login"); if(lg) lg.onclick=async function(){
     lg.disabled=true; lg.textContent="Abrindo o Google…"; M.loginErr="";
@@ -5044,7 +5168,7 @@ async function boot(){
   var hint=null; try{ hint=localStorage.getItem(HINT); }catch(e){}
   if(hint){ var ok=await MC.initFirebase(); if(ok&&MC.master){ try{ await activate(); }catch(e){} } }
 }
-window.MestreAPI={ _M:M, _MC:MC, _LIB:LIB, activate:activate, syncAll:syncAll, autosave:autosave, abrir:abrir, novo:novo, duplicar:duplicar, excluir:excluir, openPanel:openPanel, aidOf:aidOf, boot:boot };
+window.MestreAPI={ _lerXlsx:lerXlsx, _turmas:turmasDaPlanilha, _plano:planoImport, _imp:importarArquivo, _aplicar:aplicarImport,  _M:M, _MC:MC, _LIB:LIB, activate:activate, syncAll:syncAll, autosave:autosave, abrir:abrir, novo:novo, duplicar:duplicar, excluir:excluir, openPanel:openPanel, aidOf:aidOf, boot:boot };
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot); else boot();
 })();
 
