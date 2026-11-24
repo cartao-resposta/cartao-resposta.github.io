@@ -949,7 +949,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-periodos</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-colegas</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -4388,6 +4388,7 @@ window.__loadFirebase=function(){
   /* ---------- Estado do shell ---------- */
   var perfil=null, selAreas=[], profs=[], turmasDoc=null, gabs=[], tab="turmas", unsub=[];
   function stop(){unsub.forEach(function(u){try{u();}catch(e){}});unsub=[];}
+  window.EscolaAPI={B:B,perfil:function(){return perfil;},refresh:function(){ if($("eb-panel").style.display==="flex") renderSheet(); }};
 
   /* ---------- Gate (login + área) ---------- */
   function renderAreas(){
@@ -4443,7 +4444,7 @@ window.__loadFirebase=function(){
       +(B.mode!=="cloud"?' · <span class="eb-pill" style="background:#FBF0DC;color:#8a5a12">modo local</span>':'')
       +'</div></div><button class="eb-x" id="eb-close" aria-label="Fechar">×</button></div>';
     var tabs='<div class="eb-tabs">'
-      +tabBtn("turmas","Turmas")+tabBtn("gabaritos","Gabaritos")+tabBtn("nucleos","Núcleos")+tabBtn("boletim","Boletim")
+      +tabBtn("turmas","Turmas")+tabBtn("gabaritos","Gabaritos")+tabBtn("nucleos","Núcleos")+tabBtn("boletim","Boletim")+tabBtn("envio","Envio")
       +'</div>';
     s.innerHTML=head+tabs+'<div id="eb-body"></div>';
     $("eb-close").onclick=closePanel;
@@ -4452,6 +4453,7 @@ window.__loadFirebase=function(){
     if(tab==="turmas") body.innerHTML=viewTurmas(), bindTurmas();
     else if(tab==="gabaritos") body.innerHTML=viewGab(), bindGab();
     else if(tab==="nucleos") body.innerHTML=viewNucleos();
+    else if(tab==="envio"){ body.innerHTML=window.EscSync?EscSync.view():""; if(window.EscSync) EscSync.bind(); }
     else body.innerHTML=viewBoletim();
   }
   function tabBtn(id,label){return '<div class="eb-tab'+(tab===id?" on":"")+'" data-t="'+id+'">'+label+'</div>';}
@@ -4554,6 +4556,73 @@ window.__loadFirebase=function(){
 </script>
 <!-- ============ FIM CAMADA ESCOLA ============ -->
 
+<script id="esc-sync">
+(function(){
+"use strict";
+/* ===== Envio das correções do professor para o administrador da escola (aditivo) ===== */
+var LKE="esc_envio", LKS="esc_sync", LKA="esc_aviso";
+function lsGet(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function esc(s){ var d=document.createElement("div"); d.textContent=(s==null?"":String(s)); return d.innerHTML; }
+function ligado(){ return lsGet(LKE,true)!==false; }
+function souMaster(){ try{ return !!localStorage.getItem("rectius_master_hint"); }catch(e){ return false; } }
+function ctx(){
+  var A=window.EscolaAPI; if(!A||!A.B) return null; var B=A.B, p=A.perfil&&A.perfil();
+  if(!p||!p.cod||B.mode!=="cloud"||B.kind!=="firebase"||!B.uid||!B.db) return null;
+  return {B:B,p:p,col:B.base(p.cod)+"/resultados"};
+}
+var st={busy:false,err:null,t:null};
+function meta(){ var m=lsGet(LKS,{ids:[]}); if(!Array.isArray(m.ids)) m.ids=[]; return m; }
+function payload(r,c){
+  var o=JSON.parse(JSON.stringify(r));
+  o.rid=String(r.id); o.por=c.B.uid; o.prof=c.p.nome||""; o.areas_prof=c.p.areas||[]; o.em=Date.now();
+  try{ o.periodo=(window.__perDe?window.__perDe(r):r.periodo)||""; }catch(e){}
+  try{ o.modLabel=(window.__modLabel?window.__modLabel(r):r.modLabel)||""; }catch(e){}
+  return o;
+}
+async function sync(){
+  var c=ctx(); if(!c||st.busy||souMaster()) return;
+  var m=meta(), have=new Set(m.ids.map(String)), mine=store.res.filter(function(r){ return !r.fromEsc; }), cur=new Set(mine.map(function(r){ return String(r.id); }));
+  if(!ligado()){ return; }
+  st.busy=true; st.err=null;
+  try{
+    var gone=m.ids.filter(function(id){ return !cur.has(String(id)); });
+    for(var i=0;i<gone.length;i++){ try{ await c.B.db.doc(c.col+"/"+c.B.uid+"_"+gone[i]).delete(); }catch(e){} have.delete(String(gone[i])); }
+    for(var j=0;j<mine.length;j++){
+      var r=mine[j], id=String(r.id); if(have.has(id)) continue;
+      await c.B.db.doc(c.col+"/"+c.B.uid+"_"+id).set(payload(r,c)); have.add(id);
+    }
+    m.ids=Array.from(have); lsSet(LKS,m);
+    if(mine.length&&!lsGet(LKA,false)){ lsSet(LKA,true); try{ toast("Suas correções são enviadas ao administrador da escola (Escola → Envio)."); }catch(e){} }
+  }catch(e){ st.err=(e&&e.code)||"erro"; var m2=meta(); m2.ids=Array.from(have); lsSet(LKS,m2); }
+  finally{ st.busy=false; }
+}
+function agendar(){ clearTimeout(st.t); st.t=setTimeout(sync,3000); }
+function wrap(){
+  var o=window.saveRes; if(typeof o!=="function"||o.__esc) return;
+  var w=function(){ var r=o.apply(this,arguments); agendar(); return r; }; w.__esc=1; window.saveRes=w;
+}
+window.EscSync={
+  edit:function(ids){ var m=meta(), s=new Set((ids||[]).map(String)); m.ids=m.ids.filter(function(x){ return !s.has(String(x)); }); lsSet(LKS,m); agendar(); },
+  agora:function(){ return sync(); },
+  view:function(){
+    var m=meta(), n=store.res.filter(function(r){ return !r.fromEsc; }).length, ok=ctx();
+    return '<div class="eb-card2"><div class="eb-tt">Envio das minhas correções</div>'
+      +'<div class="eb-muted">As correções que você faz neste aparelho (aluno, turma e nota) são enviadas automaticamente ao <b>administrador da escola</b>. Os colegas não veem as suas notas.</div>'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px"><input type="checkbox" id="esc-env"'+(ligado()?' checked':'')+'> Enviar automaticamente</label>'
+      +'<div class="eb-muted" style="margin-top:8px">'+(ok?(m.ids.length+' de '+n+' correção'+(n!==1?'ões':'')+' enviada'+(m.ids.length!==1?'s':'')):'Sem conexão com a escola neste momento.')+(st.err?' · erro: '+esc(st.err):'')+'</div>'
+      +'<button class="eb-mini" id="esc-now" style="margin-top:12px">Enviar agora</button></div>';
+  },
+  bind:function(){
+    var c=document.getElementById("esc-env"); if(c) c.onchange=function(){ lsSet(LKE,c.checked); if(c.checked) agendar(); };
+    var b=document.getElementById("esc-now"); if(b) b.onclick=async function(){ b.disabled=true; b.textContent="Enviando…"; await sync(); b.textContent="Pronto ✓"; setTimeout(function(){ try{ window.EscolaAPI.refresh(); }catch(e){} },900); };
+  }
+};
+function init(){ wrap(); setTimeout(sync,8000); setInterval(function(){ if(!document.hidden) sync(); },180000); }
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else init();
+})();
+
+</script>
 <script id="periodo-js">
 (function(){
 "use strict";
@@ -4569,6 +4638,7 @@ function perDoCartao(id){ try{ var c=store.customs[id]; return c?perDeTexto(c.ti
 function perDe(r){ if(r.periodo!=null&&r.periodo!=="") return String(r.periodo); var p=perDoCartao(r.mod); return p||perDeTexto(r.modLabel); }
 function labelPer(p){ return p?(p+"º período"):"Sem período"; }
 function modLabel(r){ if(r.modLabel) return r.modLabel; try{ if(typeof MODELOS!=="undefined"&&MODELOS[r.mod]) return MODELOS[r.mod].label||r.mod; }catch(e){} try{ return modeloLabel(r.mod); }catch(e){ return r.mod||"—"; } }
+window.__perDe=perDe; window.__modLabel=function(r){ return modLabel(r); };
 function nota10(r){ var nq=r.nq||0; return nq? Math.round(r.total/nq*100)/10 : 0; }
 
 /* ---- seletor Período ao corrigir ---- */
@@ -4673,10 +4743,10 @@ function draw(){
   if(list.length) h+='<div style="margin:6px 0"><button id="pvX" class="btn" style="padding:6px 12px;font-size:13px">Baixar planilha (.xlsx)</button></div>';
   h+='</div>';
   if(list.length){
-    h+='<div class="card" style="padding:0;overflow:hidden;margin-top:10px"><div class="tablewrap"><table><thead><tr><th>Aluno</th><th>Turma</th><th>Prova</th><th class="n">Acertos</th><th class="n">Nota</th><th>Período</th><th></th></tr></thead><tbody>';
+    h+='<div class="card" style="padding:0;overflow:hidden;margin-top:10px"><div class="tablewrap"><table><thead><tr><th>Aluno</th><th>Turma</th><th>Prova</th><th>Corrigido por</th><th class="n">Acertos</th><th class="n">Nota</th><th>Período</th><th></th></tr></thead><tbody>';
     list.forEach(function(r){
       var p=perDe(r);
-      h+='<tr><td>'+esc(r.name||r.aluno||"—")+'</td><td>'+esc(r.turmaNome||r.turma||"—")+'</td><td style="font-size:12px">'+esc(modLabel(r))+'</td><td class="n">'+r.total+'/'+(r.nq||"?")+'</td><td class="n"><b>'+nota10(r).toFixed(1)+'</b></td>'
+      h+='<tr><td>'+esc(r.name||r.aluno||"—")+'</td><td>'+esc(r.turmaNome||r.turma||"—")+'</td><td style="font-size:12px">'+esc(modLabel(r))+'</td><td style="font-size:12px">'+esc(r.prof||"eu")+'</td><td class="n">'+r.total+'/'+(r.nq||"?")+'</td><td class="n"><b>'+nota10(r).toFixed(1)+'</b></td>'
         +'<td><select data-per="'+r.id+'" class="fldsel" style="padding:4px 6px;font-size:12px"><option value=""'+(p===""?" selected":"")+'>—</option>'+PER.map(function(x){ return '<option value="'+x+'"'+(p===x?" selected":"")+'>'+x+'º</option>'; }).join('')+'</select></td>'
         +'<td><button class="btn ghost danger" style="padding:5px 9px;font-size:12px" data-pdel="'+r.id+'">excluir</button></td></tr>';
     });
@@ -4687,15 +4757,15 @@ function draw(){
   var st=$("#pvTur"); st.value=vP.tur; st.onchange=function(){ vP.tur=st.value; draw(); };
   Array.prototype.forEach.call(body.querySelectorAll("[data-per]"),function(s){ s.onchange=function(){
     var r=store.res.find(function(x){ return String(x.id)===String(s.getAttribute("data-per")); }); if(!r) return;
-    r.periodo=s.value; saveRes(); try{ if(window.MestreAPI&&MestreAPI.resEditado) MestreAPI.resEditado([r.id]); }catch(e){} draw(); }; });
+    r.periodo=s.value; saveRes(); try{ if(r.fromEsc){ if(window.MestreAPI&&MestreAPI.escEditar) MestreAPI.escEditar(r); } else { if(window.MestreAPI&&MestreAPI.resEditado) MestreAPI.resEditado([r.id]); if(window.EscSync) EscSync.edit([r.id]); } }catch(e){} draw(); }; });
   Array.prototype.forEach.call(body.querySelectorAll("[data-pdel]"),function(b){ b.onclick=function(){ armButton(b,"excluir?",function(){
     var id=b.getAttribute("data-pdel"), r=store.res.find(function(x){ return String(x.id)===String(id); });
     store.res=store.res.filter(function(x){ return String(x.id)!==String(id); });
     try{ if(r&&r.turma&&store.done2[r.mod||"m1"]&&store.done2[r.mod||"m1"][r.turma]){ var nm=r.aluno||r.name; store.done2[r.mod||"m1"][r.turma]=store.done2[r.mod||"m1"][r.turma].filter(function(a){ return a!==nm; }); saveDone2(); } }catch(e){}
-    saveRes(); try{ updateResCount(); }catch(e){} draw(); toast("Nota excluída."); }); }; });
+    saveRes(); try{ if(r&&r.fromEsc&&window.MestreAPI&&MestreAPI.escApagar) MestreAPI.escApagar(r); }catch(e){} try{ updateResCount(); }catch(e){} draw(); toast("Nota excluída."); }); }; });
   var bx=$("#pvX"); if(bx) bx.onclick=async function(){
-    var rows=[["Aluno","Turma","Prova","Período","Acertos","Total de questões","Nota (0–10)"]];
-    list.forEach(function(r){ var p=perDe(r); rows.push([r.name||r.aluno||"",r.turmaNome||r.turma||"",modLabel(r),p?p+"º":"",r.total,r.nq||"",nota10(r)]); });
+    var rows=[["Aluno","Turma","Prova","Corrigido por","Período","Acertos","Total de questões","Nota (0–10)"]];
+    list.forEach(function(r){ var p=perDe(r); rows.push([r.name||r.aluno||"",r.turmaNome||r.turma||"",modLabel(r),r.prof||"",p?p+"º":"",r.total,r.nq||"",nota10(r)]); });
     var bytes=xlsxBytes("Notas",rows), tag=(vP.per&&vP.per!=="all"&&vP.per!=="semper")?(vP.per+"periodo"):"todos";
     try{ await entregarArquivo(bytes,"notas-"+tag+"-"+new Date().toISOString().slice(0,10)+".xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"); }catch(e){ toast("Não consegui gerar a planilha."); } };
 }
@@ -5113,13 +5183,14 @@ function resDoc(r,aid){
 }
 async function syncRes(pull){
   var salt=await ensureSalt(), meta=syncMeta(), synced=new Set(meta.res.map(String)), i;
-  var localIds=new Set(store.res.map(function(r){ return String(r.id); }));
+  var mineRes=store.res.filter(function(r){ return !r.fromEsc; });
+  var localIds=new Set(mineRes.map(function(r){ return String(r.id); }));
   /* exclusões feitas aqui chegam à nuvem */
   var gone=meta.res.filter(function(id){ return !localIds.has(String(id)); });
   for(i=0;i<gone.length;i++){ try{ await MC.delDoc("resultados/"+gone[i]); }catch(e){} synced.delete(String(gone[i])); }
   /* novos resultados daqui sobem */
-  for(i=0;i<store.res.length;i++){
-    var r=store.res[i], id=String(r.id); if(synced.has(id)) continue;
+  for(i=0;i<mineRes.length;i++){
+    var r=mineRes[i], id=String(r.id); if(synced.has(id)) continue;
     var aid=await aidOf(r.aluno||r.name||"",salt);
     await MC.setDoc("resultados/"+id,resDoc(r,aid)); synced.add(id);
   }
@@ -5129,7 +5200,7 @@ async function syncRes(pull){
     var apagar=Array.from(synced).filter(function(id){ return localIds.has(id)&&!remIds.has(id); });
     if(apagar.length&&!(remIds.size===0&&apagar.length>5)){
       var ap=new Set(apagar); M.applying=true;
-      try{ store.res=store.res.filter(function(r){ return !ap.has(String(r.id)); }); saveRes(); }finally{ M.applying=false; }
+      try{ store.res=store.res.filter(function(r){ return r.fromEsc||!ap.has(String(r.id)); }); saveRes(); }finally{ M.applying=false; }
       apagar.forEach(function(id){ synced.delete(id); localIds.delete(id); });
       refreshUI();
     }
@@ -5157,6 +5228,37 @@ function refreshUI(){
   try{ renderResults(); }catch(e){}
   try{ fillTurmaPicker(); }catch(e){}
 }
+
+
+/* ---------- correções dos colegas (escolas/<cod>/resultados) ---------- */
+function escCod(){ var pf=lsGet("escola_perfil",null); return (pf&&pf.cod)||lsGet("mestre_cod",null)||""; }
+function escApply(q){
+  var ch=(q.docChanges&&typeof q.docChanges==="function")?q.docChanges():null, changed=false;
+  var items=ch? ch.map(function(c){ return {t:c.type,d:c.doc}; }) : q.docs.map(function(d){ return {t:"added",d:d}; });
+  M.applying=true;
+  try{
+    items.forEach(function(it){
+      var d=it.d.data()||{}, lid="e_"+it.d.id, idx=-1, k;
+      for(k=0;k<store.res.length;k++){ if(store.res[k].id===lid){ idx=k; break; } }
+      if(it.t==="removed"){ if(idx>=0){ store.res.splice(idx,1); changed=true; } return; }
+      var o=JSON.parse(JSON.stringify(d)); delete o.por; delete o.areas_prof; delete o.em; delete o.rid;
+      o.id=lid; o.escDoc=it.d.id; o.fromEsc=true; o.mod="ext"; o.from=d.prof||"colega"; o.modLabel=d.modLabel||"Prova de colega";
+      if(idx>=0) store.res[idx]=o; else store.res.push(o);
+      changed=true;
+    });
+    if(changed){ saveRes(); }
+  }finally{ M.applying=false; }
+  M.escN=store.res.filter(function(r){ return r.fromEsc; }).length;
+  if(changed){ refreshUI(); if(M.panelOpen&&M.tab==="dados") renderPanel(); }
+}
+function escStart(){
+  if(M.escUnsub||!MC.master||MC.kind!=="firebase") return;
+  var cod=escCod(); if(!cod) return;
+  try{ M.escCodAtivo=cod; M.escUnsub=MC.db.collection("escolas/"+cod+"/resultados").onSnapshot(escApply,function(e){ M.escErr=(e&&e.code)||"erro"; if(M.panelOpen&&M.tab==="dados") renderPanel(); }); M.escErr=null; }catch(e){ M.escErr="erro"; }
+}
+function escStop(){ try{ if(M.escUnsub) M.escUnsub(); }catch(e){} M.escUnsub=null; }
+async function escApagar(r){ try{ var cod=M.escCodAtivo||escCod(); if(cod&&r&&r.escDoc) await MC.db.doc("escolas/"+cod+"/resultados/"+r.escDoc).delete(); }catch(e){} }
+async function escEditar(r){ try{ var cod=M.escCodAtivo||escCod(); if(cod&&r&&r.escDoc) await MC.db.doc("escolas/"+cod+"/resultados/"+r.escDoc).update({periodo:r.periodo||""}); }catch(e){} }
 
 /* ---------- orquestração da sincronização ---------- */
 function scheduleSync(){ if(!M.active) return; M.st.pending++; clearTimeout(M.timers.sync); M.timers.sync=setTimeout(function(){ syncAll(false); },4000); updateStatus(); }
@@ -5241,12 +5343,17 @@ async function renderPanel(){
       +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Gabaritos e provas</div><div class="ms-mut">'+ng+' na nuvem</div></div></div>'
       +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Turmas e nomes dos alunos</div><div class="ms-mut">'+(meta.ros?'na nuvem (só você acessa)':'ainda não enviadas')+'</div></div></div>'
       +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Resultados das turmas</div><div class="ms-mut">'+nr+' na nuvem · com o código do aluno e a nota</div></div></div>'
-      +impHtml()
+      +escHtml()+impHtml()
       +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="ms-mini solid" id="ms-sync">Sincronizar agora</button><button class="ms-mini" id="ms-bkp">Baixar backup (.json)</button></div>';
   } else {
     body.innerHTML='<p class="ms-mut" style="margin:6px 0 10px">Conectado como <b>'+esc(MC.email||"")+'</b>'+(MC.kind==="claude"?' (modo de teste do Claude)':'')+'.</p><button class="ms-mini" id="ms-logout">Sair do modo administrador</button>';
   }
   bindPanel();
+}
+function escHtml(){
+  var cod=escCod(), n=store.res.filter(function(r){ return r.fromEsc; }).length;
+  return '<div class="ms-item" style="display:block"><div class="ms-name">Correções dos colegas</div><div class="ms-mut" style="margin:2px 0 8px">Chegam sozinhas, sem precisar compartilhar. Aparecem em Notas → Por período. '+n+' recebida'+(n!==1?'s':'')+(M.escErr?' · <span class="ms-err">'+esc(M.escErr)+'</span>':'')+'</div>'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input id="ms-cod" value="'+esc(cod)+'" placeholder="Código da escola" style="flex:1;min-width:120px;padding:7px 9px;border:1px solid var(--line2,#D2D9E4);border-radius:8px;font:13px system-ui;text-transform:uppercase"><button class="ms-mini solid" id="ms-codok">'+(M.escUnsub?'Reconectar':'Conectar')+'</button></div></div>';
 }
 function impHtml(){
   var h='<div class="ms-item" style="display:block"><div class="ms-name">Turmas pela planilha (.xlsx)</div><div class="ms-mut" style="margin:2px 0 8px">Escolha o arquivo baixado do Drive (abas 1º A, 2º B… com a coluna ALUNOS). Nada é apagado: só entram os nomes novos.</div>';
@@ -5262,6 +5369,7 @@ function impHtml(){
   return h+'</div>';
 }
 function bindPanel(){
+  var cb=$("ms-codok"); if(cb) cb.onclick=function(){ var v=($("ms-cod").value||"").trim().toUpperCase(); if(!v) return; lsSet("mestre_cod",v); escStop(); escStart(); renderPanel(); };
   var ib=$("ms-impbtn"), ifl=$("ms-impfile");
   if(ib&&ifl){ ib.onclick=function(){ ifl.click(); }; ifl.onchange=async function(){ var f=ifl.files&&ifl.files[0]; if(!f) return; M.impErr=""; try{ await importarArquivo(f); }catch(e){ M.impErr=(e&&e.message)||"Não consegui ler a planilha."; } renderPanel(); }; }
   var iok=$("ms-impok"); if(iok) iok.onclick=function(){ aplicarImport(); renderPanel(); toast2("Turmas atualizadas pela planilha."); };
@@ -5333,8 +5441,9 @@ async function activate(){
   /* o que já está sendo editado entra na biblioteca; depois sincroniza (puxando o que veio de outros aparelhos) */
   try{ await autosave(false); }catch(e){}
   syncAll(true);
+  escStart();
 }
-async function deactivate(){
+async function deactivate(){ escStop();
   M.active=false; document.body.classList.remove("is-master"); updateStatus();
 }
 
@@ -5348,7 +5457,7 @@ async function boot(){
   var hint=null; try{ hint=localStorage.getItem(HINT); }catch(e){}
   if(hint){ var ok=await MC.initFirebase(); if(ok&&MC.master){ try{ await activate(); }catch(e){} } }
 }
-window.MestreAPI={ resEditado:function(ids){ if(!M.active) return; var m=syncMeta(), set=new Set((ids||[]).map(String)); m.res=m.res.filter(function(x){ return !set.has(String(x)); }); setSyncMeta(m); scheduleSync(); },
+window.MestreAPI={ escApagar:escApagar, escEditar:escEditar, _escApply:escApply, _escStart:escStart,  resEditado:function(ids){ if(!M.active) return; var m=syncMeta(), set=new Set((ids||[]).map(String)); m.res=m.res.filter(function(x){ return !set.has(String(x)); }); setSyncMeta(m); scheduleSync(); },
   cartaoApagado:function(id){ if(!M.active) return; (async function(){ try{ await MC.delDoc("gabaritos/"+id); var m=syncMeta(); delete m.gab[id]; setSyncMeta(m); scheduleSync(); }catch(e){} })(); },  _poll:function(){ return 0; },  _lerXlsx:lerXlsx, _turmas:turmasDaPlanilha, _plano:planoImport, _imp:importarArquivo, _aplicar:aplicarImport,  _M:M, _MC:MC, _LIB:LIB, activate:activate, syncAll:syncAll, autosave:autosave, abrir:abrir, novo:novo, duplicar:duplicar, excluir:excluir, openPanel:openPanel, aidOf:aidOf, boot:boot };
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot); else boot();
 })();
