@@ -949,7 +949,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-professores</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-sair</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -4393,6 +4393,21 @@ window.__loadFirebase=function(){
   function stop(){unsub.forEach(function(u){try{u();}catch(e){}});unsub=[];}
   window.EscolaAPI={B:B,DISC:DISC,perfil:function(){return perfil;},salvarDisciplinas:async function(list){ if(!perfil) return false; perfil.disciplinas=list.slice(); await B.setPerfil(perfil); if(B.mode==="cloud"){ try{ await B.db.doc(B.base(perfil.cod)+"/professores/"+B.uid).set({nome:perfil.nome,mat:perfil.mat,areas:perfil.areas,disciplinas:perfil.disciplinas,em:Date.now()}); }catch(e){ return false; } } return true; },refresh:function(){ if($("eb-panel").style.display==="flex") renderSheet(); }};
 
+  window.EscolaAPI.sair=async function(apagar){
+    var p0=perfil; if(!p0) return;
+    try{ if(localStorage.getItem("rectius_master_hint")) writeLS("mestre_cod",p0.cod); }catch(e){}
+    if(B.mode==="cloud"&&B.db&&B.uid){
+      try{
+        if(apagar){ var q=await B.db.collection(B.base(p0.cod)+"/resultados").where("por","==",B.uid).get(); for(var i=0;i<q.docs.length;i++){ try{ await q.docs[i].ref.delete(); }catch(e){} } }
+        await B.db.doc(B.base(p0.cod)+"/professores/"+B.uid).delete();
+      }catch(e){}
+      try{ await B.perfilRef().delete(); }catch(e){}
+    }
+    stop(); perfil=null; selAreas=[]; tab="turmas";
+    try{ localStorage.removeItem(LK_PERFIL); localStorage.removeItem("esc_sync"); }catch(e){}
+    closePanel();
+    try{ if(typeof toast==="function") toast("Você saiu da escola."); }catch(e){}
+  };
   /* ---------- Gate (login + área) ---------- */
   function renderAreas(){
     var box=$("eb-arealist"); box.innerHTML="";
@@ -4603,7 +4618,7 @@ async function sync(){
   var c=ctx(); if(!c||st.busy||souMaster()) return;
   var m=meta(), have=new Set(m.ids.map(String)), mine=store.res.filter(function(r){ return !r.fromEsc; }), cur=new Set(mine.map(function(r){ return String(r.id); }));
   if(!ligado()){ return; }
-  st.busy=true; st.err=null;
+  st.busy=true; st.err=null; st.removido=false;
   try{
     var gone=m.ids.filter(function(id){ return !cur.has(String(id)); });
     for(var i=0;i<gone.length;i++){ try{ await c.B.db.doc(c.col+"/"+c.B.uid+"_"+gone[i]).delete(); }catch(e){} have.delete(String(gone[i])); }
@@ -4613,7 +4628,8 @@ async function sync(){
     }
     m.ids=Array.from(have); lsSet(LKS,m);
     if(mine.length&&!lsGet(LKA,false)){ lsSet(LKA,true); try{ toast("Suas correções são enviadas ao administrador da escola (Escola → Envio)."); }catch(e){} }
-  }catch(e){ st.err=(e&&e.code)||"erro"; var m2=meta(); m2.ids=Array.from(have); lsSet(LKS,m2); }
+  }catch(e){ st.err=(e&&e.code)||"erro"; var m2=meta(); m2.ids=Array.from(have); lsSet(LKS,m2);
+    if(st.err==="permission-denied"){ try{ var d0=await c.B.db.doc(c.B.base(c.p.cod)+"/professores/"+c.B.uid).get(); st.removido=!d0.exists; }catch(e2){} } }
   finally{ st.busy=false; }
 }
 function agendar(){ clearTimeout(st.t); st.t=setTimeout(sync,3000); }
@@ -4641,12 +4657,24 @@ window.EscSync={
     return window.EscSync.discHtml()+'<div class="eb-card2"><div class="eb-tt">Envio das minhas correções</div>'
       +'<div class="eb-muted">As correções que você faz neste aparelho (aluno, turma e nota) são enviadas automaticamente ao <b>administrador da escola</b>. Os colegas não veem as suas notas.</div>'
       +'<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px"><input type="checkbox" id="esc-env"'+(ligado()?' checked':'')+'> Enviar automaticamente</label>'
-      +'<div class="eb-muted" style="margin-top:8px">'+(ok?(m.ids.length+' de '+n+' correção'+(n!==1?'ões':'')+' enviada'+(m.ids.length!==1?'s':'')):'Sem conexão com a escola neste momento.')+(st.err?' · erro: '+esc(st.err):'')+'</div>'
-      +'<button class="eb-mini" id="esc-now" style="margin-top:12px">Enviar agora</button></div>';
+      +'<div class="eb-muted" style="margin-top:8px">'+(ok?(m.ids.length+' de '+n+' correção'+(n!==1?'ões':'')+' enviada'+(m.ids.length!==1?'s':'')):'Sem conexão com a escola neste momento.')+(st.err&&!st.removido?' · erro: '+esc(st.err):'')+'</div>'
+      +(st.removido?'<div class="eb-muted" style="margin-top:8px;color:var(--bad,#E23D4B)"><b>Seu cadastro nesta escola foi removido</b> (pelo administrador ou por engano). Para voltar a enviar suas correções, cadastre-se de novo.</div><button class="eb-mini" id="esc-rec" style="margin-top:8px">Cadastrar de novo</button>':'')
+      +'<button class="eb-mini" id="esc-now" style="margin-top:12px">Enviar agora</button></div>'
+      +'<div class="eb-card2"><div class="eb-tt">Sair desta escola</div>'
+      +(st.sairAsk
+        ? '<div class="eb-muted">Você deixa de ser membro e o envio automático para. Suas notas continuam neste aparelho. Para voltar, é só entrar de novo com o código da escola.</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="eb-mini" id="esc-sair1" style="background:#E23D4B;border-color:#E23D4B;color:#fff">Sair, manter o que já enviei</button><button class="eb-mini" id="esc-sair2" style="background:#E23D4B;border-color:#E23D4B;color:#fff">Sair e apagar o que enviei</button><button class="eb-mini" id="esc-sairno">Cancelar</button></div>'
+        : '<div class="eb-muted">Use se cadastrou por engano, mudou de escola ou quer trocar de código.</div><button class="eb-mini" id="esc-sair0" style="margin-top:10px">Sair da escola…</button>')
+      +'</div>';
   },
   bind:function(){
     window.EscSync.bindDisc();
     var c=document.getElementById("esc-env"); if(c) c.onchange=function(){ lsSet(LKE,c.checked); if(c.checked) agendar(); };
+    var rc=document.getElementById("esc-rec"); if(rc) rc.onclick=async function(){ rc.disabled=true; try{ var c0=ctx(); await c0.B.entrar(c0.p); st.removido=false; st.err=null; await sync(); }catch(e){} try{ window.EscolaAPI.refresh(); }catch(e){} };
+    var s0=document.getElementById("esc-sair0"); if(s0) s0.onclick=function(){ st.sairAsk=true; try{ window.EscolaAPI.refresh(); }catch(e){} };
+    var sn=document.getElementById("esc-sairno"); if(sn) sn.onclick=function(){ st.sairAsk=false; try{ window.EscolaAPI.refresh(); }catch(e){} };
+    var s1=document.getElementById("esc-sair1"), s2=document.getElementById("esc-sair2");
+    function doSair(ap){ return async function(){ s1&&(s1.disabled=true); s2&&(s2.disabled=true); st.sairAsk=false; await window.EscolaAPI.sair(ap); }; }
+    if(s1) s1.onclick=doSair(false); if(s2) s2.onclick=doSair(true);
     var b=document.getElementById("esc-now"); if(b) b.onclick=async function(){ b.disabled=true; b.textContent="Enviando…"; await sync(); b.textContent="Pronto ✓"; setTimeout(function(){ try{ window.EscolaAPI.refresh(); }catch(e){} },900); };
   }
 };
