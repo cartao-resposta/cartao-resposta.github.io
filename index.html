@@ -949,7 +949,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-sair</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-turmas2</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -4440,7 +4440,7 @@ window.__loadFirebase=function(){
   function subscribeAll(){
     stop();
     unsub.push(B.subProfs(perfil.cod,function(list){profs=list||[];if($("eb-panel").style.display==="flex"&&tab==="nucleos")renderSheet();}));
-    unsub.push(B.subTurmas(perfil.cod,function(d){turmasDoc=d;if($("eb-panel").style.display==="flex"&&tab==="turmas")renderSheet();}));
+    unsub.push(B.subTurmas(perfil.cod,function(d){turmasDoc=d;try{ autoMesclar(d); }catch(e){}if($("eb-panel").style.display==="flex"&&tab==="turmas")renderSheet();}));
     unsub.push(B.subGab(perfil.cod,function(list){gabs=list||[];if($("eb-panel").style.display==="flex"&&tab==="gabaritos")renderSheet();}));
   }
 
@@ -4498,18 +4498,65 @@ window.__loadFirebase=function(){
     if(turmasDoc&&turmasDoc.roster){
       var ks=Object.keys(turmasDoc.roster).filter(function(k){return (turmasDoc.roster[k].al||[]).length>0;});
       if(ks.length){
-        ks.forEach(function(k){var t=turmasDoc.roster[k];h+='<div class="eb-item"><span>'+esc(t.n||k)+' <span class="eb-muted">· '+(t.al||[]).length+' aluno(s)</span></span></div>';});
+        ks.forEach(function(k){var t=turmasDoc.roster[k];h+='<div class="eb-item"><span>'+esc(t.n||k)+' <span class="eb-muted">· '+(t.al||[]).length+' aluno(s)</span></span>'
+          +(isAdm()?(ltAsk===k?'<span style="display:flex;gap:6px"><button class="eb-mini" data-ltok="'+esc(k)+'" style="background:#E23D4B;border-color:#E23D4B;color:#fff">Limpar</button><button class="eb-mini" data-ltno="1">Não</button></span>':'<button class="eb-mini" data-lt="'+esc(k)+'">Limpar</button>'):'')+'</div>';});
+        if(isAdm()){ h+=(ltAsk==="__all"?'<div class="eb-muted" style="margin-top:10px">Remover <b>todas</b> as turmas e alunos da lista compartilhada? As notas e as turmas dos professores nos aparelhos não são apagadas.</div><div style="display:flex;gap:6px;margin-top:8px"><button class="eb-mini" id="eb-lt-allok" style="background:#E23D4B;border-color:#E23D4B;color:#fff">Limpar todas</button><button class="eb-mini" data-ltno="1">Cancelar</button></div>':'<button class="eb-mini" id="eb-lt-all" style="margin-top:10px">Limpar todas as turmas…</button>'); }
         h+='<div class="eb-muted" style="margin-top:8px">Publicadas por '+esc(turmasDoc.nome||"—")+'.</div>';
         h+='<button class="eb-mini solid" id="eb-aplicar-turmas" style="margin-top:12px">Aplicar estas turmas no meu app</button>';
       } else h+='<div class="eb-muted">Ainda sem turmas com alunos compartilhadas.</div>';
     } else h+='<div class="eb-muted">Ninguém publicou as turmas da escola ainda.</div>';
     h+='</div>';
     h+='<div class="eb-card2"><div class="eb-tt">Publicar minhas turmas</div>'
-      +'<div class="eb-muted">Envia as turmas e alunos que você já cadastrou ('+minhas.length+' com alunos) para a escola. As notas não vão junto.</div>'
+      +'<div class="eb-muted">Envia as turmas e alunos que você já cadastrou ('+minhas.length+' com alunos) para a escola. As notas não vão junto.'+(isMaster()?' Como administrador, suas turmas são publicadas aqui <b>automaticamente</b> sempre que mudam (por exemplo, ao importar a planilha).':'')+'</div>'
       +'<button class="eb-mini" id="eb-pub-turmas" style="margin-top:12px"'+(minhas.length?'':' disabled')+'>Publicar minhas turmas atuais</button></div>';
     return h;
   }
+  var ltAsk=null;
+  /* turmas do administrador entram sozinhas nos apps dos professores (soma e atualiza; nada some) */
+  function normNome(x){ return String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim().toLowerCase(); }
+  function autoMesclar(d){
+    if(!d||!d.roster||isMaster()) return;
+    if(d.por&&B.uid&&d.por===B.uid) return;
+    var em=d.em||0, ult=readLS("esc_turmas_em",0); if(!em||em<=ult) return;
+    if(typeof store==="undefined"||!store) return;
+    var ro=store.roster||{}, novos=0, mudou=false;
+    Object.keys(d.roster).forEach(function(k){
+      var t=d.roster[k]||{}, src=Array.isArray(t.al)?t.al.map(String):[]; if(!src.length) return;
+      if(!ro[k]) ro[k]={n:t.n||k,al:[]};
+      var al=Array.isArray(ro[k].al)?ro[k].al:[], tem={}; al.forEach(function(x){ tem[normNome(x)]=1; });
+      var add=src.filter(function(x){ var n=normNome(x); if(!n||tem[n]) return false; tem[n]=1; return true; });
+      if(add.length){ ro[k].al=al.concat(add).sort(function(a,b){ return String(a).localeCompare(String(b),"pt"); }); novos+=add.length; mudou=true; }
+    });
+    writeLS("esc_turmas_em",em);
+    if(mudou){
+      store.roster=ro; try{ saveRoster(); }catch(e){}
+      try{ fillTurmaPicker(); }catch(e){} try{ renderListaAlunos(); }catch(e){} try{ renderResults(); }catch(e){}
+      try{ if(typeof toast==="function") toast("Turmas da escola atualizadas: "+novos+" aluno"+(novos!==1?"s":"")+" novo"+(novos!==1?"s":"")+"."); }catch(e){}
+    }
+  }
+  function isMaster(){ try{ return !!localStorage.getItem("rectius_master_hint"); }catch(e){ return false; } }
+  function isAdm(){ return !!(B.admin||isMaster()); }
+  function hashS(str){ var h=5381,i; for(i=0;i<str.length;i++){ h=((h<<5)+h+str.charCodeAt(i))|0; } return String(h); }
+  async function gravarTurmasDoc(roster){
+    var payload={roster:roster,por:B.uid||"local",nome:(perfil&&perfil.nome)||"",em:Date.now()};
+    if(B.mode==="cloud"){ try{ await B.turmasRef(perfil.cod).set(payload); return true; }catch(e){ return false; } }
+    writeLS("escola_turmas_local",payload); turmasDoc=payload; return true;
+  }
+  var pubBusy=false;
+  async function autoPublicar(){
+    if(pubBusy||!perfil||!isMaster()||B.mode!=="cloud"||!B.uid) return;
+    var r=currentRoster(), com=Object.keys(r).filter(function(k){ return (r[k].al||[]).length>0; });
+    if(!com.length) return;
+    var h=hashS(JSON.stringify(r)); if(readLS("esc_turmas_pub",null)===h) return;
+    pubBusy=true; try{ var ok=await B.publicarTurmas(perfil.cod,r,perfil.nome); if(ok) writeLS("esc_turmas_pub",h); }catch(e){} pubBusy=false;
+  }
+  setTimeout(autoPublicar,7000); setInterval(function(){ if(!document.hidden) autoPublicar(); },25000);
   function bindTurmas(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-lt]"),function(el){ el.onclick=function(){ ltAsk=el.getAttribute("data-lt"); renderSheet(); }; });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-ltno]"),function(el){ el.onclick=function(){ ltAsk=null; renderSheet(); }; });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-ltok]"),function(el){ el.onclick=async function(){ var k=el.getAttribute("data-ltok"); el.disabled=true; var r=JSON.parse(JSON.stringify((turmasDoc&&turmasDoc.roster)||{})); delete r[k]; await gravarTurmasDoc(r); ltAsk=null; renderSheet(); }; });
+    var la=$("eb-lt-all"); if(la) la.onclick=function(){ ltAsk="__all"; renderSheet(); };
+    var lo=$("eb-lt-allok"); if(lo) lo.onclick=async function(){ lo.disabled=true; await gravarTurmasDoc({}); ltAsk=null; renderSheet(); };
     var a=$("eb-aplicar-turmas"); if(a)a.onclick=function(){
       if(!turmasDoc||!turmasDoc.roster)return;
       if(!confirm("Isto substitui as turmas e alunos do seu app pelas turmas da escola. Suas notas já lançadas são mantidas. Continuar?"))return;
