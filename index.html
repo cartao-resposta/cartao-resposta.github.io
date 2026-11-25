@@ -949,7 +949,7 @@ tr.me td{font-weight:700}
     </div>
   </section>
 
-  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-painel</span></div>
+  <div class="sig">Desenvolvido por <b>Thiago Silveira</b> · <span style="opacity:.7">versão 24nov-professores</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -4627,7 +4627,7 @@ window.EscSync={
   discHtml:function(){
     var A=window.EscolaAPI, p=A&&A.perfil&&A.perfil(); if(!p) return "";
     var atual=p.disciplinas||[], lista=[]; (p.areas||[]).forEach(function(a){ ((A.DISC||{})[a]||[]).forEach(function(d){ if(lista.indexOf(d)<0) lista.push(d); }); }); atual.forEach(function(d){ if(lista.indexOf(d)<0) lista.push(d); });
-    return '<div class="eb-card2"><div class="eb-tt">Minhas disciplinas</div><div class="eb-muted">Marque a disciplina que você leciona. Ela aparece para o administrador ao lado das suas correções.</div><div class="eb-areas" id="esc-disc" style="margin-top:8px">'+lista.map(function(d){ return '<div class="eb-area'+(atual.indexOf(d)>=0?' on':'')+'" data-d="'+esc(d)+'">'+esc(d)+'</div>'; }).join('')+'</div><input id="esc-disc-outra" placeholder="Outra disciplina (digite e tecle Enter)" style="margin-top:8px;width:100%;padding:9px 10px;border:1px solid var(--line2,#D2D9E4);border-radius:8px;font:13px system-ui;box-sizing:border-box"></div>';
+    return '<div class="eb-card2"><div class="eb-tt">Minhas disciplinas</div><div class="eb-muted">Marque a disciplina que você leciona. É só uma identificação: aparece ao lado do seu nome para o administrador. Você continua enviando as correções de todas as disciplinas do cartão, de qualquer turma.</div><div class="eb-areas" id="esc-disc" style="margin-top:8px">'+lista.map(function(d){ return '<div class="eb-area'+(atual.indexOf(d)>=0?' on':'')+'" data-d="'+esc(d)+'">'+esc(d)+'</div>'; }).join('')+'</div><input id="esc-disc-outra" placeholder="Outra disciplina (digite e tecle Enter)" style="margin-top:8px;width:100%;padding:9px 10px;border:1px solid var(--line2,#D2D9E4);border-radius:8px;font:13px system-ui;box-sizing:border-box"></div>';
   },
   bindDisc:function(){
     var A=window.EscolaAPI, p=A&&A.perfil&&A.perfil(); if(!p) return;
@@ -4843,7 +4843,6 @@ function passa(r,ignoraPer){
   if(!ignoraPer){ if(vD.per==="semper"){ if(p) return false; } else if(vD.per&&vD.per!=="all"){ if(p!==vD.per) return false; } }
   if(vD.tur&&r.turma!==vD.tur) return false;
   if(vD.prof&&profDe(r)!==vD.prof) return false;
-  if(vD.disc&&discDe(r).split(", ").indexOf(vD.disc)<0) return false;
   return true;
 }
 function barra(rot,val,pct,warn,extra){ return '<div style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px"><span style="width:70px;flex:none;color:var(--text-secondary)">'+esc(rot)+'</span><span style="flex:1;display:block"><i style="display:block;height:14px;width:'+Math.max(2,Math.round(pct))+'%;border-radius:0 4px 4px 0;background:'+(warn?'#eb6834':'#2a78d6')+'"></i></span><span style="min-width:34px;text-align:right;color:var(--text-primary)">'+val+'</span>'+(extra||'')+'</div>'; }
@@ -4851,14 +4850,13 @@ function card(t,inner){ return '<div class="card" style="padding:12px 14px;margi
 function drawP(){
   var body=$("#painelBody"); if(!body) return;
   var meta=metaAprov(), todos=store.res;
-  var profs={}, discs={}, turs={}; todos.forEach(function(r){ profs[profDe(r)]=1; var d=discDe(r); if(d) d.split(", ").forEach(function(x){ discs[x]=1; }); if(r.turma) turs[r.turma]=1; });
+  var profs={}, profD={}, turs={}; todos.forEach(function(r){ profs[profDe(r)]=1; if(!profD[profDe(r)]) profD[profDe(r)]=discDe(r); if(r.turma) turs[r.turma]=1; });
   var list=todos.filter(function(r){ return passa(r,false); }), alunos=agrupar(list);
   var n=alunos.length, mg=mediaDe(alunos.map(function(a){ return a.media; })), ok=alunos.filter(function(a){ return a.media>=meta; }).length, baixo=alunos.filter(function(a){ return a.media<meta; });
   var h='<div class="card" style="padding:12px"><div style="display:flex;gap:8px;flex-wrap:wrap">'
    +'<label class="fld" style="margin:0;flex:1;min-width:120px"><span>Período</span><select id="pnPer" class="fldsel"><option value="all">Todos</option>'+PER.map(function(x){ return '<option value="'+x+'">'+x+'º período</option>'; }).join('')+'<option value="semper">Sem período</option></select></label>'
    +'<label class="fld" style="margin:0;flex:1;min-width:120px"><span>Turma</span><select id="pnTur" class="fldsel"><option value="">Todas</option>'+TURMAS.filter(function(t){ return turs[t[0]]; }).map(function(t){ return '<option value="'+t[0]+'">'+esc(t[1])+'</option>'; }).join('')+'</select></label>'
-   +'<label class="fld" style="margin:0;flex:1;min-width:120px"><span>Professor</span><select id="pnProf" class="fldsel"><option value="">Todos</option>'+Object.keys(profs).sort().map(function(x){ return '<option value="'+esc(x)+'">'+(x==="eu"?"Eu":esc(x))+'</option>'; }).join('')+'</select></label>'
-   +(Object.keys(discs).length?'<label class="fld" style="margin:0;flex:1;min-width:120px"><span>Disciplina</span><select id="pnDisc" class="fldsel"><option value="">Todas</option>'+Object.keys(discs).sort().map(function(x){ return '<option value="'+esc(x)+'">'+esc(x)+'</option>'; }).join('')+'</select></label>':'')
+   +'<label class="fld" style="margin:0;flex:1;min-width:120px"><span>Professor</span><select id="pnProf" class="fldsel"><option value="">Todos</option>'+Object.keys(profs).sort().map(function(x){ return '<option value="'+esc(x)+'">'+(x==="eu"?"Eu":esc(x))+(profD[x]?" · "+esc(profD[x]):"")+'</option>'; }).join('')+'</select></label>'
    +'<label class="fld" style="margin:0;width:110px"><span>Média de aprovação</span><input id="pnMeta" type="text" style="width:100%;min-width:0" inputmode="decimal" value="'+String(meta).replace(".",",")+'"></label></div></div>';
   if(!n){ body.innerHTML=h+card("Sem dados","<div style='color:var(--text-secondary);font-size:13px'>Nenhuma nota neste filtro.</div>"); bindP(); return; }
   var k=function(t,v){ return '<div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:8px;padding:10px 12px"><div style="font-size:12px;color:var(--text-secondary)">'+t+'</div><div style="font-size:22px;font-weight:500">'+v+'</div></div>'; };
@@ -4883,7 +4881,6 @@ function bindP(){
   var s=$("#pnPer"); if(s){ s.value=(vD.per===""||vD.per==null)?"all":vD.per; s.onchange=function(){ vD.per=s.value; drawP(); }; }
   var t=$("#pnTur"); if(t){ t.value=vD.tur; t.onchange=function(){ vD.tur=t.value; drawP(); }; }
   var p=$("#pnProf"); if(p){ p.value=vD.prof; p.onchange=function(){ vD.prof=p.value; drawP(); }; }
-  var d=$("#pnDisc"); if(d){ d.value=vD.disc; d.onchange=function(){ vD.disc=d.value; drawP(); }; }
   var m=$("#pnMeta"); if(m) m.onchange=function(){ var v=parseFloat(String(m.value).replace(",",".")); if(isFinite(v)&&v>0&&v<=10){ lsSet(LKM,String(v)); } drawP(); };
 }
 
@@ -5460,7 +5457,7 @@ async function renderPanel(){
       +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Gabaritos e provas</div><div class="ms-mut">'+ng+' na nuvem</div></div></div>'
       +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Turmas e nomes dos alunos</div><div class="ms-mut">'+(meta.ros?'na nuvem (só você acessa)':'ainda não enviadas')+'</div></div></div>'
       +'<div class="ms-item"><div class="ms-info"><div class="ms-name">Resultados das turmas</div><div class="ms-mut">'+nr+' na nuvem · com o código do aluno e a nota</div></div></div>'
-      +escHtml()+impHtml()
+      +escHtml()+profsHtml()+impHtml()
       +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="ms-mini solid" id="ms-sync">Sincronizar agora</button><button class="ms-mini" id="ms-bkp">Baixar backup (.json)</button></div>';
   } else {
     body.innerHTML='<p class="ms-mut" style="margin:6px 0 10px">Conectado como <b>'+esc(MC.email||"")+'</b>'+(MC.kind==="claude"?' (modo de teste do Claude)':'')+'.</p><button class="ms-mini" id="ms-logout">Sair do modo administrador</button>';
@@ -5471,6 +5468,45 @@ function escHtml(){
   var cod=escCod(), n=store.res.filter(function(r){ return r.fromEsc; }).length;
   return '<div class="ms-item" style="display:block"><div class="ms-name">Correções dos colegas</div><div class="ms-mut" style="margin:2px 0 8px">Chegam sozinhas, sem precisar compartilhar. Aparecem em Notas → Por período. '+n+' recebida'+(n!==1?'s':'')+(M.escErr?' · <span class="ms-err">'+esc(M.escErr)+'</span>':'')+'</div>'
     +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input id="ms-cod" value="'+esc(cod)+'" placeholder="Código da escola" style="flex:1;min-width:120px;padding:7px 9px;border:1px solid var(--line2,#D2D9E4);border-radius:8px;font:13px system-ui;text-transform:uppercase"><button class="ms-mini solid" id="ms-codok">'+(M.escUnsub?'Reconectar':'Conectar')+'</button></div></div>';
+}
+
+/* ---------- professores cadastrados (só o administrador exclui) ---------- */
+async function profsLoad(){
+  var cod=escCod(); if(!cod||MC.kind!=="firebase"||M.profsLoading) return;
+  M.profsLoading=true; M.profsErr="";
+  try{
+    var snap=await MC.db.collection("escolas/"+cod+"/professores").get();
+    M.profs=snap.docs.map(function(d){ var x=d.data()||{}; return {id:d.id,nome:x.nome||"(sem nome)",mat:x.mat||"",areas:x.areas||[],disciplinas:x.disciplinas||[]}; }).sort(function(a,b){ return a.nome.localeCompare(b.nome); });
+  }catch(e){ M.profsErr=(e&&e.code)||"erro"; if(M.profs===undefined||M.profs===null) M.profs=[]; }
+  M.profsLoading=false; if(M.panelOpen&&M.tab==="dados") renderPanel();
+}
+async function profRemover(id,comNotas){
+  var cod=escCod(); if(!cod||!id) return;
+  try{
+    if(comNotas){
+      var q=await MC.db.collection("escolas/"+cod+"/resultados").where("por","==",id).get();
+      for(var i=0;i<q.docs.length;i++){ await q.docs[i].ref.delete(); }
+    }
+    await MC.db.doc("escolas/"+cod+"/professores/"+id).delete();
+    toast2(comNotas?"Professor e correções removidos.":"Professor removido.");
+  }catch(e){ toast2("Não consegui remover ("+((e&&e.code)||"erro")+")."); }
+  M.profDel=null; M.profs=null; M.profsLoading=false; profsLoad();
+}
+function profsHtml(){
+  var cod=escCod(); if(!cod||MC.kind!=="firebase") return "";
+  if(M.profs===undefined||M.profs===null){ if(!M.profsLoading) profsLoad(); }
+  var l=M.profs||[], h='<div class="ms-item" style="display:block"><div class="ms-name">Professores cadastrados</div><div class="ms-mut" style="margin:2px 0 8px">'+(M.profsLoading?"Carregando…":l.length+" na escola")+(M.profsErr?' · <span class="ms-err">'+esc(M.profsErr)+'</span>':'')+'. Remova quem foi cadastrado por engano ou deixou a escola.</div>';
+  l.forEach(function(p){
+    var nn=store.res.filter(function(r){ return r.fromEsc&&r.escDoc&&String(r.escDoc).indexOf(p.id+"_")===0; }).length;
+    var info=[p.mat?("mat. "+p.mat):"",(p.areas||[]).join(", "),(p.disciplinas||[]).join(", ")].filter(Boolean).join(" · ");
+    h+='<div class="ms-item" style="display:block;margin:6px 0"><div class="ms-name">'+esc(p.nome)+'</div><div class="ms-mut">'+esc(info)+(nn?' · '+nn+' correç'+(nn!==1?'ões':'ão')+' recebida'+(nn!==1?'s':''):'')+'</div>'
+     +(M.profDel===p.id
+       ? '<div class="ms-mut" style="margin:6px 0">Remover <b>'+esc(p.nome)+'</b>? Ele deixa de ser membro da escola.</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="ms-mini danger" data-pa="rm" data-id="'+esc(p.id)+'">Remover, manter notas</button><button class="ms-mini danger" data-pa="rmn" data-id="'+esc(p.id)+'">Remover e apagar notas</button><button class="ms-mini" data-pa="no">Cancelar</button></div>'
+       : '<div style="margin-top:6px"><button class="ms-mini" data-pa="ask" data-id="'+esc(p.id)+'">Excluir</button></div>')
+     +'</div>';
+  });
+  h+='<div style="margin-top:6px"><button class="ms-mini" data-pa="reload">Atualizar lista</button></div></div>';
+  return h;
 }
 function impHtml(){
   var h='<div class="ms-item" style="display:block"><div class="ms-name">Turmas pela planilha (.xlsx)</div><div class="ms-mut" style="margin:2px 0 8px">Escolha o arquivo baixado do Drive (abas 1º A, 2º B… com a coluna ALUNOS). Nada é apagado: só entram os nomes novos.</div>';
@@ -5486,6 +5522,10 @@ function impHtml(){
   return h+'</div>';
 }
 function bindPanel(){
+  Array.prototype.forEach.call(document.querySelectorAll("[data-pa]"),function(el){ el.onclick=function(){ var a=el.getAttribute("data-pa"), id=el.getAttribute("data-id");
+    if(a==="ask"){ M.profDel=id; renderPanel(); } else if(a==="no"){ M.profDel=null; renderPanel(); }
+    else if(a==="rm") profRemover(id,false); else if(a==="rmn") profRemover(id,true);
+    else if(a==="reload"){ M.profs=null; M.profsLoading=false; profsLoad(); renderPanel(); } }; });
   var cb=$("ms-codok"); if(cb) cb.onclick=function(){ var v=($("ms-cod").value||"").trim().toUpperCase(); if(!v) return; lsSet("mestre_cod",v); escStop(); escStart(); renderPanel(); };
   var ib=$("ms-impbtn"), ifl=$("ms-impfile");
   if(ib&&ifl){ ib.onclick=function(){ ifl.click(); }; ifl.onchange=async function(){ var f=ifl.files&&ifl.files[0]; if(!f) return; M.impErr=""; try{ await importarArquivo(f); }catch(e){ M.impErr=(e&&e.message)||"Não consegui ler a planilha."; } renderPanel(); }; }
